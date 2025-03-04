@@ -49,12 +49,13 @@ public class assignProjects {
         }
 
         User vendor = vendorOpt.get();
+        List<String> projects = vendor.getProjectsId();
         List<String> selectedProjects = request.getProjectIds();
 
         selectedProjects.forEach(projectId -> {
             Optional<Project> optionalProject = projectRepository.findByProjectIdentifier(projectId);
 
-            if (optionalProject.isPresent()) {
+            if (optionalProject.isPresent() && !projects.contains(projectId)) {
                 Project project = optionalProject.get();
 
                 List<String> vendors = project.getVendorsUsername();
@@ -62,14 +63,20 @@ public class assignProjects {
                     vendors = new ArrayList<>();
                 }
 
-                vendors.add(vendor.getUsername());
-                project.setVendorsUsername(vendors);
-                projectRepository.save(project);
+                if(!vendors.contains(vendor.getUsername())){
+                    vendors.add(vendor.getUsername());
+                    project.setVendorsUsername(vendors);
+                    projectRepository.save(project);
+                    projects.add(projectId);
+                }
+
+
+
             }
         });
 
 
-        vendor.getProjectsId().addAll(selectedProjects);
+        vendor.getProjectsId().addAll(projects);
         userRepository.save(vendor);
 
         return ResponseEntity.ok("Projects assigned successfully!");

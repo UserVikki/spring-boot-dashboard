@@ -487,7 +487,15 @@
                 },
                 body: JSON.stringify(formData)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.status === 401) {
+                    alert("Session expired. Please log in again.");
+                    localStorage.removeItem('jwtToken');
+                    window.location.href = "/login";
+                    return;
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log("Success:", data);
                 alert("Vendor added successfully!");

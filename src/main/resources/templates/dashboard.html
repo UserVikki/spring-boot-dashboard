@@ -371,7 +371,7 @@
                 responsive: true, // Enables responsive behavior
                 lengthMenu: [
                     [10, 20, 50, 100, -1], // Values for dropdown options
-                    [10, 20, 50, 100, allText] // Labels for the dropdown
+                    [10, 20, 50, 100, "ALL"] // Labels for the dropdown
                 ],
                 pageLength: 10, // Default rows per page
                 dom: 'lBfrtip', // Enables buttons like export
@@ -417,8 +417,11 @@
         function fetchSurveyResponses() {
             fetch("/survey/api/survey-responses/all")
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    if (response.status === 401) {
+                        alert("Session expired. Please log in again.");
+                        localStorage.removeItem('jwtToken');
+                        window.location.href = "/login";
+                        return;
                     }
                     return response.json();
                 })
@@ -429,26 +432,23 @@
         }
 
         function populateTable(surveyResponses) {
-            const tableBody = document.querySelector("#example tbody");
-            tableBody.innerHTML = ""; // Clear existing rows
+            const table = $('#example').DataTable();
+            table.clear(); // Clears the existing table data
 
             surveyResponses.forEach(response => {
-                const row = document.createElement("tr");
-                console.log(response);
-                // Add survey data to the row.
-                row.innerHTML = `
-                    <td>${response.projectId}</td>
-                    <td>${response.uid}</td>
-                    <td><span class="badge ${getStatusClass(response.status)}">${response.status}</span></td>
-                    <td>${formatDate(response.timeStart)}</td>
-                    <td>${response.ipAddress}</td>
-                `;
-
-                tableBody.appendChild(row);
+                const row = [
+                    response.projectId,
+                    response.uid,
+                    `<span class="badge ${getStatusClass(response.status)}">${response.status}</span>`,
+                    formatDate(response.timeStart),
+                    response.ipAddress
+                ];
+                table.row.add(row); // Adds the new row to DataTable
             });
+
+            table.draw(); // Redraws the table to reflect the changes
         }
 
-        // Function to add Bootstrap badge classes based on status
         function getStatusClass(status) {
             switch (status.toLowerCase()) {
                 case "completed":
@@ -462,14 +462,12 @@
             }
         }
 
-        // Function to format timestamp (ISO 8601 format to readable format)
         function formatDate(isoDate) {
             if (!isoDate) return "N/A";
             const date = new Date(isoDate);
             return date.toLocaleString(); // Converts to local date-time format
         }
     </script>
-
 
 </body>
 

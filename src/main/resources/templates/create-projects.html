@@ -256,7 +256,7 @@
 
                                             <div class="col-lg-4 mb-3">
                                                 <label for="status" class="form-label">Status</label>
-                                                <select class="form-control" id="status" name="status">
+                                                <select class="form-control" id="status" name="status" style="display:block;">
                                                     <option value="OPEN">Open</option>
                                                     <option value="CLOSED">Closed</option>
                                                 </select>
@@ -583,7 +583,7 @@
 
         data.forEach(client => {
             let option = document.createElement("option");
-            option.value = client.id;  // Use the client ID as value
+            option.value = client.username;  // Use the client ID as value
             option.textContent = client.username;  // Show the client name
             clientSelect.appendChild(option);
         });

@@ -402,26 +402,26 @@
     </script>
 
     <!-- DataTables Initialization -->
-    <script>
-        $(document).ready(function () {
-            $('#example').DataTable({
-                responsive: true, // Enables responsive behavior
-                lengthMenu: [
-                        [10, 20, 50, 100, -1],
-                        [10, 20, 50, 100, allText]
-                    ],
-                pageLength: 10, // Default rows per page
-                dom: 'lBfrtip', // Enables buttons like export
-                buttons: [
-                    'copy', 'csv', 'excel', 'pdf', 'print'
-                ],
-                language: {
-                    search: "Search Table:", // Customize search input placeholder
-                    lengthMenu: "Show _MENU_ entries", // Customize length menu text
-                }
-            });
-        });
-    </script>
+<!--    <script>-->
+<!--        $(document).ready(function () {-->
+<!--            $('#example').DataTable({-->
+<!--                responsive: true, // Enables responsive behavior-->
+<!--                lengthMenu: [-->
+<!--                        [10, 20, 50, 100, -1],-->
+<!--                        [10, 20, 50, 100, allText]-->
+<!--                    ],-->
+<!--                pageLength: 10, // Default rows per page-->
+<!--                dom: 'lBfrtip', // Enables buttons like export-->
+<!--                buttons: [-->
+<!--                    'copy', 'csv', 'excel', 'pdf', 'print'-->
+<!--                ],-->
+<!--                language: {-->
+<!--                    search: "Search Table:", // Customize search input placeholder-->
+<!--                    lengthMenu: "Show _MENU_ entries", // Customize length menu text-->
+<!--                }-->
+<!--            });-->
+<!--        });-->
+<!--    </script>-->
 
 
     <!-- JavaScript to Handle Modal Data -->
@@ -588,7 +588,7 @@
         }
 
         data.forEach(project => {
-        console.log(project);
+             console.log(project);
             let row = document.createElement("tr");
             row.setAttribute("data-country-links", JSON.stringify(project.countryLinks));
             row.setAttribute("data-project-vendors", JSON.stringify(project.vendorsUsername));
@@ -608,10 +608,11 @@
                     <button type="button" class="btn btn-success view-vendors" data-bs-toggle="modal" data-bs-target="#linksModal">View Vendors</button>
                 </td>
             `;
-        console.log(row);
+             console.log(row);
 
             tableBody.appendChild(row);
         });
+        initializeDataTable();
     })
     .catch(error => console.error('Error fetching projects:', error));
 
@@ -644,6 +645,27 @@
             });
         }
     });
+
+    function initializeDataTable() {
+<!--        if ($.fn.dataTable.isDataTable('#example')) {-->
+<!--                $('#example').DataTable().destroy();-->
+<!--            }-->
+        console.log("initialization stared");
+        $("#example").DataTable({
+            responsive: true,
+            lengthMenu: [
+                [10, 20, 50, 100, -1],
+                [10, 20, 50, 100, allText]
+            ],
+            pageLength: 10,
+            dom: 'lBfrtip',
+            buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+            language: {
+                search: "Search Table:",
+                lengthMenu: "Show _MENU_ entries",
+            }
+        });
+    }
 });
 
     </script>

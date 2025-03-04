@@ -213,7 +213,6 @@ public class AdminController {
         List<SurveyResponse> surveyResponses = surveyResponseRepository.findByProjectIdIn(projectIds);
         Map<String, GetVendorResponse> projectResponseMap = new HashMap<>();
 
-        if(surveyResponses.isEmpty()){
             projectIds.forEach(projectId ->
             {
                 Optional<Project> project = projectRepository.findByProjectIdentifier(projectId);
@@ -235,7 +234,6 @@ public class AdminController {
                     projectResponseMap.put(project.get().getProjectIdentifier(), getVendorResponse);
                 }
             });
-        }
         for (SurveyResponse survey : surveyResponses) {
             String projectId = survey.getProjectId();
             SurveyStatus status = survey.getStatus();
