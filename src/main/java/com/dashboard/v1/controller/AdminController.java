@@ -1,5 +1,6 @@
 package com.dashboard.v1.controller;
 
+import com.dashboard.v1.AppProperties;
 import com.dashboard.v1.entity.*;
 import com.dashboard.v1.model.request.ClientRequest;
 import com.dashboard.v1.model.request.VendorRequest;
@@ -39,7 +40,9 @@ public class AdminController {
     private final VendorService vendorService;
     private final SurveyResponseRepository surveyResponseRepository;
 
-    private final String domain = "localhost:8080";
+//    private final String domain = "localhost:8080";
+    private final AppProperties appProperties;
+
 
     @PostMapping("/vendors/create")
     public ResponseEntity<?> createVendor(@RequestBody VendorRequest request) {
@@ -227,7 +230,7 @@ public class AdminController {
                     {
                         CountryLink link = new CountryLink();
                         link.setCountry(countrylink.getCountry());
-                        link.setOriginalLink(domain+"/survey/"+ vendor.getUserToken() +"/"+countrylink.getCountry()+"?PID="+projectId+"&UID=111");
+                        link.setOriginalLink(appProperties.getDomain()+"/survey/"+ vendor.getUserToken() +"/"+countrylink.getCountry()+"?PID="+projectId+"&UID=111");
                         links.add(link);
                     });
                     getVendorResponse.setLinks(links);

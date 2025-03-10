@@ -11,9 +11,12 @@ public class AppProperties {
 
     private String secretKey;
 
+    private String domain;
+
     @PostConstruct
     public void init() {
-        System.out.println("Secret Key Loaded: " + secretKey);
+//        System.out.println("Secret Key Loaded: " + secretKey);
+        System.out.println("Domain Loaded: " + domain);
     }
 
     public String getSecretKey() {
@@ -22,5 +25,13 @@ public class AppProperties {
 
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 }

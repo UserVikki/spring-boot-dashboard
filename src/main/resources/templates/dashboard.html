@@ -451,11 +451,11 @@
 
         function getStatusClass(status) {
             switch (status.toLowerCase()) {
-                case "completed":
+                case "complete":
                     return "bg-success"; // Green
-                case "terminated":
+                case "terminate":
                     return "bg-danger"; // Red
-                case "pending":
+                case "quotafull":
                     return "bg-warning"; // Yellow
                 default:
                     return "bg-secondary"; // Gray
