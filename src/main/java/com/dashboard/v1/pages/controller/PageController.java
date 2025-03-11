@@ -111,5 +111,10 @@ public class PageController {
         return "redirect-page"; // Redirects to vendor-info.html or vendor-info.jsp
     }
 
+    @GetMapping("/redirectLinks")
+    public String redirects() {
+        return "show-redirects";
+    }
+
 
 }

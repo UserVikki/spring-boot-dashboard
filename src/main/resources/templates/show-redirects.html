@@ -212,6 +212,7 @@
     <!-- Left Sidebar End -->
 
 
+
     <!-- ============================================================== -->
     <!-- Start right Content here -->
     <!-- ============================================================== -->
@@ -224,12 +225,12 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                            <h4 class="mb-sm-0 font-size-18">All Vendors</h4>
+                            <h4 class="mb-sm-0 font-size-18">Dashboard</h4>
 
                             <div class="page-title-right">
                                 <ol class="breadcrumb m-0">
                                     <li class="breadcrumb-item"><a href="javascript: void(0);">Admin</a></li>
-                                    <li class="breadcrumb-item active">All Vendors</li>
+                                    <li class="breadcrumb-item active">Dashboard</li>
                                 </ol>
                             </div>
 
@@ -243,20 +244,19 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-12">
-
                         <table id="example" class="table table-striped table-bordered" style="width:100%">
                             <thead>
                             <tr>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Company</th>
-                                <th>Action</th>
-                            </tr>
+                                <th>complete</th>
+                                <th>terminate</th>
+                                <th>quotaFull</th>
+                             </tr>
                             </thead>
                             <tbody>
-                            <!-- Data will be populated here dynamically -->
                             </tbody>
                         </table>
+                        <button class="btn btn-primary mt-2" onclick="copyToClipboard()">Copy All</button>
+
                     </div>
                 </div>
             </div>
@@ -345,130 +345,105 @@
 </script>
 
 <!-- DataTables Initialization -->
-
-
-
-
-
 <script>
-    $(document).ready(function(){
-        $(".copy-btn").click(function(){
-            let button = $(this);
-            let originalHtml = button.html(); // Save original button content
-            let linkText = button.text().trim(); // Extract only the text part
+    $(document).ready(function () {
+        $('#example').DataTable({
+            responsive: true, // Enables responsive behavior
+            lengthMenu: [
+                [10, 20, 50, 100, -1], // Values for dropdown options
+                [10, 20, 50, 100, "ALL"] // Labels for the dropdown
+            ],
+            pageLength: 10, // Default rows per page
+            dom: 'lBfrtip', // Enables buttons like export
+            buttons: [
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ],
+            language: {
+                search: "Search Table:", // Customize search input placeholder
+                lengthMenu: "Show _MENU_ entries", // Customize length menu text
+            }
+        });
+    });
+</script>
 
-            // Copy only the link text (without the icon)
-            let tempInput = $("<input>");
-            $("body").append(tempInput);
-            tempInput.val(linkText).select();
-            document.execCommand("copy");
-            tempInput.remove();
 
-            // Change button text temporarily to "Copied!"
-            button.html(`<i class="bx bx-link label-icon"></i> Copied!`)
-                .addClass("btn-success")
-                .removeClass("btn-primary");
+<!-- JavaScript to Handle Modal Data -->
+<script>
+    document.querySelectorAll('.view-links').forEach(button => {
+        button.addEventListener('click', function () {
+            let row = this.closest('tr');
+            let link = row.getAttribute('data-links');
+            let countries = JSON.parse(row.getAttribute('data-countries'));
 
-            // Restore original content after 1.5 seconds
-            setTimeout(() => {
-                button.html(originalHtml).removeClass("btn-success").addClass("btn-primary");
-            }, 1500);
+            document.getElementById('originalLink').href = link;
+            document.getElementById('originalLink').textContent = link;
+
+            let countryList = document.getElementById('countryList');
+            countryList.innerHTML = '';
+
+            countries.forEach(country => {
+                let li = document.createElement('li');
+                li.innerHTML = `${country.flag} ${country.name} (${country.count})`;
+                countryList.appendChild(li);
+            });
         });
     });
 </script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const token = localStorage.getItem("jwtToken");
-
-        if (!token) {
-            window.location.href = "/login";  // Redirect if not logged in
-            return;
-        }
-
-        fetchAndPopulateTable();
+        fetchSurveyResponses();
     });
 
-    function fetchAndPopulateTable() {
-        const token = localStorage.getItem("jwtToken");
-
-        if (!token) {
-            window.location.href = "/login";  // Redirect if not logged in
-            return;
-        }
-
-        fetch("/admin/vendors/get/", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token,
-            }
-        })
-        .then(response => {
-            if (response.status === 401) {
-                alert("Session expired. Please log in again.");
-                localStorage.removeItem('jwtToken');
-                window.location.href = "/login";
-                return;
-            }
-            return response.json();
-        })
-        .then(data => {
-            populateTable(data);
-        })
-        .catch(error => {
-            console.error("Error fetching data:", error);
-        });
+    function fetchSurveyResponses() {
+        fetch("/redirects")
+            .then(response => {
+                if (response.status === 401) {
+                    alert("Session expired. Please log in again.");
+                    localStorage.removeItem('jwtToken');
+                    window.location.href = "/login";
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                populateTable(data);
+            })
+            .catch(error => console.error("Error fetching survey responses:", error));
     }
 
-    function populateTable(users) {
-        let table = $("#example").DataTable();
+    function populateTable(responses) {
+        const table = $('#example').DataTable();
+        table.clear(); // Clears the existing table data
 
-        // ✅ Clear and Destroy DataTable before populating
-        table.clear().destroy();
-
-        let tableBody = document.querySelector("#example tbody");
-        tableBody.innerHTML = ""; // Clear existing rows
-
-        users.forEach(user => {
-            let vendorUrl = `/show/vendor/info?username=${encodeURIComponent(user.username)}&email=${encodeURIComponent(user.email)}&company=${encodeURIComponent(user.companyName)}`;
-
-            let row = `<tr>
-                <td>${user.username}</td>
-                <td>${user.email}</td>
-                <td>${user.companyName}</td>
-                <td><a href="${vendorUrl}"><button type="button" class="btn btn-success view-links">View Vendor</button></a></td>
-            </tr>`;
-
-            // ✅ Use insertAdjacentHTML to avoid re-parsing the entire innerHTML
-            tableBody.insertAdjacentHTML("beforeend", row);
+        responses.forEach(response => {
+            const row = [
+                response.complete,
+                response.terminate,
+                response.quotafull
+            ];
+            table.row.add(row); // Adds the new row to DataTable
         });
 
-        // ✅ Reinitialize DataTable after adding new rows
-        initializeDataTable();
+        table.draw(); // Redraws the table to reflect the changes
     }
 
-    function initializeDataTable() {
-        $("#example").DataTable({
-            responsive: true,
-            lengthMenu: [
-                [10, 20, 50, 100, -1],
-                [10, 20, 50, 100, "All"]
-            ],
-            pageLength: 10,
-            dom: 'lBfrtip',
-            buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
-            language: {
-                search: "Search Table:",
-                lengthMenu: "Show _MENU_ entries",
-            }
+    function copyToClipboard() {
+        let tableData = [];
+
+        // Get all rows from the DataTable
+        const table = $('#example').DataTable();
+        table.rows().every(function () {
+            const data = this.data();
+            tableData.push(data.join("\n")); // Join each row's values with a tab space
         });
+
+        const textToCopy = tableData.join("\n"); // Join all rows with a newline
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            alert("Copied to clipboard!");
+        }).catch(err => console.error("Error copying:", err));
     }
 
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text)
-            .then(() => alert("Copied to clipboard: " + text))
-            .catch(err => console.error("Failed to copy:", err));
-    }
 </script>
 
 </body>

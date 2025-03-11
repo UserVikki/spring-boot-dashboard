@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -80,7 +82,8 @@ public class LinkRedirectController {
             SurveyResponse newResponse = new SurveyResponse();
             newResponse.setUId(uid);
             newResponse.setProjectId(pid);
-            newResponse.setTimeStart(LocalDateTime.now());
+            ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+            newResponse.setTimeStart(now.toLocalDateTime());
 
             // Capture the user's IP address from the HttpServletRequest.
             newResponse.setIpAddress(ip);
