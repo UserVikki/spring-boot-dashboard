@@ -1,13 +1,16 @@
 package com.dashboard.v1.repository;
 
 import com.dashboard.v1.entity.Project;
+import com.dashboard.v1.entity.ProjectStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,5 +60,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     @Query("SELECT p FROM Project p JOIN p.vendorsUsername v WHERE v = :vendorUsername")
     List<Project> findProjectsByVendorUsername(@Param("vendorUsername") String vendorUsername);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Project p SET p.status = :updatedStatus WHERE p.projectIdentifier = :projectId")
+    void updateProjectStatusByProjectId(@Param("updatedStatus") ProjectStatus updatedStatus,
+                                        @Param("projectId") String projectId);
 
 }

@@ -2,6 +2,7 @@ package com.dashboard.v1.controller;
 
 import com.dashboard.v1.entity.Client;
 import com.dashboard.v1.entity.Project;
+import com.dashboard.v1.entity.ProjectStatus;
 import com.dashboard.v1.entity.SurveyResponse;
 import com.dashboard.v1.model.request.CreateProjectRequest;
 import com.dashboard.v1.model.response.VendorProjectDetailsResponse;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,6 +130,28 @@ public class ProjectController {
     public Optional<Project> getProjectDetails(@PathVariable Long projectId) {
         logger.info("inside ProjectController /projects/{projectId} projectId : {} ", projectId);
         return projectRepository.findById(projectId);
+    }
+
+    // ✅ Fetch current project status by projectId and update it
+    @GetMapping("/status/update/{projectId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void getAndUpdateProjectStatus(@PathVariable String projectId) {
+        logger.info("inside ProjectController /status/get-update/{projectId} projectId : {} ", projectId);
+
+        try {
+            Project oldProject = projectRepository.findByProjectIdentifier(projectId).get();
+            ProjectStatus currentStatus = oldProject.getStatus();
+
+            if (currentStatus.equals(ProjectStatus.OPEN)) {
+                projectRepository.updateProjectStatusByProjectId(ProjectStatus.CLOSED, projectId);
+            } else {
+                projectRepository.updateProjectStatusByProjectId(ProjectStatus.OPEN, projectId);
+            }
+
+        } catch (Exception e) {
+            logger.error("Error while fetch project by projectId : {}", projectId);
+        }
     }
 
 }
