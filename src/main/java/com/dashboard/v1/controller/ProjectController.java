@@ -21,10 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/projects")
@@ -134,24 +131,26 @@ public class ProjectController {
 
     // ✅ Fetch current project status by projectId and update it
     @GetMapping("/status/update/{projectId}")
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
-    public void getAndUpdateProjectStatus(@PathVariable String projectId) {
+    public ResponseEntity<?> getAndUpdateProjectStatus(@PathVariable String projectId) {
         logger.info("inside ProjectController /status/get-update/{projectId} projectId : {} ", projectId);
 
-        try {
-            Project oldProject = projectRepository.findByProjectIdentifier(projectId).get();
-            ProjectStatus currentStatus = oldProject.getStatus();
 
-            if (currentStatus.equals(ProjectStatus.OPEN)) {
-                projectRepository.updateProjectStatusByProjectId(ProjectStatus.CLOSED, projectId);
-            } else {
-                projectRepository.updateProjectStatusByProjectId(ProjectStatus.OPEN, projectId);
-            }
+        Optional<Project> optionalProject = projectRepository.findByProjectIdentifier(projectId);
 
-        } catch (Exception e) {
-            logger.error("Error while fetch project by projectId : {}", projectId);
+        if (optionalProject.isPresent()) {
+            Project project = optionalProject.get();
+
+            // Toggle status
+            ProjectStatus newStatus = (project.getStatus() == ProjectStatus.OPEN) ? ProjectStatus.CLOSED : ProjectStatus.OPEN;
+            project.setStatus(newStatus);
+            projectRepository.save(project);
+
+            return ResponseEntity.ok(Collections.singletonMap("success", newStatus));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Project not found"));
         }
+
     }
 
 }

@@ -16,7 +16,7 @@ public class AppProperties {
     @PostConstruct
     public void init() {
 //        System.out.println("Secret Key Loaded: " + secretKey);
-        System.out.println("Domain Loaded: " + domain);
+//        System.out.println("Domain Loaded: " + domain);
     }
 
     public String getSecretKey() {

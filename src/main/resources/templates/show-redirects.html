@@ -225,12 +225,12 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                            <h4 class="mb-sm-0 font-size-18">Dashboard</h4>
+                            <h4 class="mb-sm-0 font-size-18">Redirects</h4>
 
                             <div class="page-title-right">
                                 <ol class="breadcrumb m-0">
                                     <li class="breadcrumb-item"><a href="javascript: void(0);">Admin</a></li>
-                                    <li class="breadcrumb-item active">Dashboard</li>
+                                    <li class="breadcrumb-item active">Redirects</li>
                                 </ol>
                             </div>
 
@@ -345,50 +345,50 @@
 </script>
 
 <!-- DataTables Initialization -->
-<script>
-    $(document).ready(function () {
-        $('#example').DataTable({
-            responsive: true, // Enables responsive behavior
-            lengthMenu: [
-                [10, 20, 50, 100, -1], // Values for dropdown options
-                [10, 20, 50, 100, "ALL"] // Labels for the dropdown
-            ],
-            pageLength: 10, // Default rows per page
-            dom: 'lBfrtip', // Enables buttons like export
-            buttons: [
-                'copy', 'csv', 'excel', 'pdf', 'print'
-            ],
-            language: {
-                search: "Search Table:", // Customize search input placeholder
-                lengthMenu: "Show _MENU_ entries", // Customize length menu text
-            }
-        });
-    });
-</script>
+<!--<script>-->
+<!--    $(document).ready(function () {-->
+<!--        $('#example').DataTable({-->
+<!--            responsive: true, // Enables responsive behavior-->
+<!--            lengthMenu: [-->
+<!--                [10, 20, 50, 100, -1], // Values for dropdown options-->
+<!--                [10, 20, 50, 100, "ALL"] // Labels for the dropdown-->
+<!--            ],-->
+<!--            pageLength: 10, // Default rows per page-->
+<!--            dom: 'lBfrtip', // Enables buttons like export-->
+<!--            buttons: [-->
+<!--                'copy', 'csv', 'excel', 'pdf', 'print'-->
+<!--            ],-->
+<!--            language: {-->
+<!--                search: "Search Table:", // Customize search input placeholder-->
+<!--                lengthMenu: "Show _MENU_ entries", // Customize length menu text-->
+<!--            }-->
+<!--        });-->
+<!--    });-->
+<!--</script>-->
 
 
 <!-- JavaScript to Handle Modal Data -->
-<script>
-    document.querySelectorAll('.view-links').forEach(button => {
-        button.addEventListener('click', function () {
-            let row = this.closest('tr');
-            let link = row.getAttribute('data-links');
-            let countries = JSON.parse(row.getAttribute('data-countries'));
+<!--<script>-->
+<!--    document.querySelectorAll('.view-links').forEach(button => {-->
+<!--        button.addEventListener('click', function () {-->
+<!--            let row = this.closest('tr');-->
+<!--            let link = row.getAttribute('data-links');-->
+<!--            let countries = JSON.parse(row.getAttribute('data-countries'));-->
 
-            document.getElementById('originalLink').href = link;
-            document.getElementById('originalLink').textContent = link;
+<!--            document.getElementById('originalLink').href = link;-->
+<!--            document.getElementById('originalLink').textContent = link;-->
 
-            let countryList = document.getElementById('countryList');
-            countryList.innerHTML = '';
+<!--            let countryList = document.getElementById('countryList');-->
+<!--            countryList.innerHTML = '';-->
 
-            countries.forEach(country => {
-                let li = document.createElement('li');
-                li.innerHTML = `${country.flag} ${country.name} (${country.count})`;
-                countryList.appendChild(li);
-            });
-        });
-    });
-</script>
+<!--            countries.forEach(country => {-->
+<!--                let li = document.createElement('li');-->
+<!--                li.innerHTML = `${country.flag} ${country.name} (${country.count})`;-->
+<!--                countryList.appendChild(li);-->
+<!--            });-->
+<!--        });-->
+<!--    });-->
+<!--</script>-->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         fetchSurveyResponses();
@@ -411,19 +411,15 @@
             .catch(error => console.error("Error fetching survey responses:", error));
     }
 
-    function populateTable(responses) {
+    function populateTable(response) {
         const table = $('#example').DataTable();
         table.clear(); // Clears the existing table data
-
-        responses.forEach(response => {
             const row = [
                 response.complete,
                 response.terminate,
                 response.quotafull
             ];
-            table.row.add(row); // Adds the new row to DataTable
-        });
-
+            table.row.add(row);
         table.draw(); // Redraws the table to reflect the changes
     }
 

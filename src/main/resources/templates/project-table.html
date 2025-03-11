@@ -556,219 +556,139 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-    const token = localStorage.getItem("jwtToken");
+      const token = localStorage.getItem("jwtToken");
 
-    if (!token) {
-        window.location.href = "/login"; // Redirect if not logged in
-        return;
-    }
+      if (!token) {
+          window.location.href = "/login"; // Redirect if not logged in
+          return;
+      }
 
-    fetch('/projects/all', {
-        method: "GET",
-        headers: {
-            "Authorization": "Bearer " + token, // Add JWT token
-            "Content-Type": "application/json"
-        }
-    })
-    .then(response => {
-        if (response.status === 401) {
-            alert("Session expired. Please log in again.");
-            localStorage.removeItem('jwtToken');
-            window.location.href = "/login";
-            return;
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (!Array.isArray(data)) {
-            console.error("Invalid data format:", data);
-            return;
-        }
-        console.log(data);
-        let tableBody = document.querySelector("#example tbody");
-        tableBody.innerHTML = ""; // Clear table before adding new data
+      fetch('/projects/all', {
+          method: "GET",
+          headers: {
+              "Authorization": "Bearer " + token, // Add JWT token
+              "Content-Type": "application/json"
+          }
+      })
+      .then(response => {
+          if (response.status === 401) {
+              alert("Session expired. Please log in again.");
+              localStorage.removeItem('jwtToken');
+              window.location.href = "/login";
+              return;
+          }
+          return response.json();
+      })
+      .then(data => {
+          if (!Array.isArray(data)) {
+              console.error("Invalid data format:", data);
+              return;
+          }
+          let tableBody = document.querySelector("#example tbody");
 
-        if (!tableBody) {
-            console.error("❌ Table body not found!");
-            return;
-        }
+          if (!tableBody) {
+              console.error("❌ Table body not found!");
+              return;
+          }
 
-        data.forEach(project => {
-             console.log(project);
-            let row = document.createElement("tr");
-            row.setAttribute("data-country-links", JSON.stringify(project.countryLinks));
-            row.setAttribute("data-project-vendors", JSON.stringify(project.vendorsUsername));
+          tableBody.innerHTML = ""; // Clear table before adding new data
 
-            row.innerHTML = `
-                <td>${project.projectIdentifier}</td>
-                <td><span class="badge bg-${getStatusClass(project.status)}">${project.status}</span></td>
-                <td>${project.quota}</td>
-                <td>${project.loi}</td>
-                <td>${project.ir}%</td>
-                <td>${project.counts}</td>
-                <td>${project.client}</td>
-                <td>
-                    <button type="button" class="btn btn-success view-links" data-bs-toggle="modal" data-bs-target="#linksModal">View Links</button>
-                </td>
-                <td>
-                    <button type="button" class="btn btn-success view-vendors" data-bs-toggle="modal" data-bs-target="#linksModal">View Vendors</button>
-                </td>
-            `;
-             console.log(row);
+          data.forEach(project => {
+              let row = document.createElement("tr");
+              row.setAttribute("data-country-links", JSON.stringify(project.countryLinks));
+              row.setAttribute("data-project-vendors", JSON.stringify(project.vendorsUsername));
 
-            tableBody.appendChild(row);
-        });
-        initializeDataTable();
-    })
-    .catch(error => console.error('Error fetching projects:', error));
+              row.innerHTML = `
+                  <td>${project.projectIdentifier}</td>
+                  <td>
+                      <button class="btn ${getStatusClass(project.status)}" onclick="toggleStatus(this, '${project.projectIdentifier}')">
+                          ${project.status}
+                      </button>
+                  </td>
+                  <td>${project.quota}</td>
+                  <td>${project.loi}</td>
+                  <td>${project.ir}%</td>
+                  <td>${project.counts}</td>
+                  <td>${project.client}</td>
+                  <td>
+                      <button type="button" class="btn btn-success view-links" data-bs-toggle="modal" data-bs-target="#linksModal">View Links</button>
+                  </td>
+                  <td>
+                      <button type="button" class="btn btn-success view-vendors" data-bs-toggle="modal" data-bs-target="#linksModal">View Vendors</button>
+                  </td>
+              `;
 
-    function getStatusClass(status) {
-        switch (status.toLowerCase()) {
-            case 'OPEN': return 'success';
-            case 'CLOSED': return 'danger';
-            default: return 'secondary';
-        }
-    }
+              tableBody.appendChild(row);
+          });
 
-    document.addEventListener('click', function (event) {
-        if (event.target.classList.contains('view-links')) {
-            let row = event.target.closest('tr');
-            let countryLinks = JSON.parse(row.getAttribute('data-country-links'));
+          initializeDataTable();
+      })
+      .catch(error => console.error('Error fetching projects:', error));
+  });
 
-            let countryList = document.getElementById('countryList');
-            countryList.innerHTML = ""; // Clear previous entries
+  // ✅ Move toggleStatus OUTSIDE of .then()
+  function toggleStatus(button, projectId) {
+      let currentStatus = button.innerText.trim();
+      let newStatus = currentStatus.toLowerCase() === "open" ? "closed" : "open";
 
-            countryLinks.forEach(linkObj => {
-                let li = document.createElement('li');
-                let linkElement = document.createElement('a');
-                linkElement.href = linkObj.originalLink;
-                linkElement.textContent = linkObj.originalLink;
-                linkElement.target = "_blank";
+      fetch(`/projects/status/update/${projectId}`)
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  // Update button text and class
+                  button.innerText = newStatus;
+                  button.className = `btn ${getStatusClass(newStatus)}`;
+              } else {
+                  alert("Failed to update status.");
+              }
+          })
+          .catch(error => console.error("Error updating status:", error));
+  }
 
-                li.innerHTML = `<strong>${linkObj.country}:</strong> `;
-                li.appendChild(linkElement);
-                countryList.appendChild(li);
-            });
-        }
-    });
+  function getStatusClass(status) {
+      return status.toLowerCase() === "open" ? "btn-success" : "btn-danger";
+  }
 
-    function initializeDataTable() {
-<!--        if ($.fn.dataTable.isDataTable('#example')) {-->
-<!--                $('#example').DataTable().destroy();-->
-<!--            }-->
-        console.log("initialization stared");
-        $("#example").DataTable({
-            responsive: true,
-            lengthMenu: [
-                [10, 20, 50, 100, -1],
-                [10, 20, 50, 100, allText]
-            ],
-            pageLength: 10,
-            dom: 'lBfrtip',
-            buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
-            language: {
-                search: "Search Table:",
-                lengthMenu: "Show _MENU_ entries",
-            }
-        });
-    }
-});
+  document.addEventListener('click', function (event) {
+      if (event.target.classList.contains('view-links')) {
+          let row = event.target.closest('tr');
+          let countryLinks = JSON.parse(row.getAttribute('data-country-links'));
+
+          let countryList = document.getElementById('countryList');
+          countryList.innerHTML = ""; // Clear previous entries
+
+          countryLinks.forEach(linkObj => {
+              let li = document.createElement('li');
+              let linkElement = document.createElement('a');
+              linkElement.href = linkObj.originalLink;
+              linkElement.textContent = linkObj.originalLink;
+              linkElement.target = "_blank";
+
+              li.innerHTML = `<strong>${linkObj.country}:</strong> `;
+              li.appendChild(linkElement);
+              countryList.appendChild(li);
+          });
+      }
+  });
+
+  function initializeDataTable() {
+      $("#example").DataTable({
+          responsive: true,
+          lengthMenu: [
+              [10, 20, 50, 100, -1],
+              [10, 20, 50, 100, allText]
+          ],
+          pageLength: 10,
+          dom: 'lBfrtip',
+          buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+          language: {
+              search: "Search Table:",
+              lengthMenu: "Show _MENU_ entries",
+          }
+      });
+  }
 
     </script>
-<!--    <script>-->
-<!--        const token = localStorage.getItem("jwtToken");-->
-<!--        if (!token) {-->
-<!--            window.location.href = "/login";  // Redirect if not logged in-->
-<!--        } else {-->
-<!--            document.addEventListener("DOMContentLoaded", function () {-->
-<!--                fetch('/projects/all', {-->
-<!--                    method: "GET",-->
-<!--                    headers: {-->
-<!--                        "Authorization": "Bearer " + token,  // Add JWT token-->
-<!--                        "Content-Type": "application/json"-->
-<!--                    }-->
-<!--        })-->
-<!--        .then(response => {-->
-<!--            if (response.status === 401) {-->
-<!--                alert("Session expired. Please log in again.");-->
-<!--                localStorage.removeItem('jwtToken');-->
-<!--                window.location.href = "/login";-->
-<!--            }-->
-<!--            return response.json();-->
-<!--        })-->
-<!--        .then(data => {-->
-<!--            let tableBody = document.querySelector("#example tbody");-->
-<!--            tableBody.innerHTML = "";-->
-
-<!--            data.forEach(project => {-->
-<!--                let row = document.createElement("tr");-->
-<!--                row.setAttribute("data-country-links", JSON.stringify(project.countryLinks)); // Store country-link pairs-->
-
-<!--                row.innerHTML = `-->
-<!--                    <td>${project.projectIdentifier}</td>-->
-<!--                    <td><span class="badge bg-${getStatusClass(project.status)}">${project.status}</span></td>-->
-<!--                    <td>${project.quota}</td>-->
-<!--                    <td>${project.loi}</td>-->
-<!--                    <td>${project.ir}%</td>-->
-<!--                    <td>${project.counts}</td>-->
-<!--                    <td>-->
-<!--                        <button type="button" class="btn btn-success view-links" data-bs-toggle="modal" data-bs-target="#linksModal">View Links</button>-->
-<!--                    </td>-->
-<!--                `;-->
-
-<!--                tableBody.appendChild(row);-->
-<!--                });-->
-
-<!--                // Reinitialize DataTable after inserting new data-->
-<!--                $('#example').DataTable().destroy();-->
-<!--                $('#example').DataTable({-->
-<!--                    responsive: true,-->
-<!--                     lengthMenu: [-->
-<!--                        [10, 20, 50, 100, -1],-->
-<!--                        [10, 20, 50, 100, allText]-->
-<!--                     ],-->
-<!--                    pageLength: 10,-->
-<!--                    dom: 'lBfrtip',-->
-<!--                    buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],-->
-<!--                    language: { search: "Search Table:", lengthMenu: "Show _MENU_ entries" }-->
-<!--                });-->
-<!--                })-->
-<!--                .catch(error => console.error('Error fetching projects:', error));-->
-
-<!--                function getStatusClass(status) {-->
-<!--                    switch (status.toLowerCase()) {-->
-<!--                        case 'active': return 'success';-->
-<!--                        case 'pending': return 'warning';-->
-<!--                        case 'closed': return 'danger';-->
-<!--                        default: return 'secondary';-->
-<!--                    }-->
-<!--                }-->
-
-<!--                document.addEventListener('click', function (event) {-->
-<!--                    if (event.target.classList.contains('view-links')) {-->
-<!--                        let row = event.target.closest('tr');-->
-<!--                        let countryLinks = JSON.parse(row.getAttribute('data-country-links')); // Get stored data-->
-
-<!--                        let countryList = document.getElementById('countryList');-->
-<!--                        countryList.innerHTML = ''; // Clear previous entries-->
-
-<!--                        countryLinks.forEach(linkObj => {-->
-<!--                            let li = document.createElement('li');-->
-<!--                            let linkElement = document.createElement('a');-->
-<!--                            linkElement.href = linkObj.originalLink;-->
-<!--                            linkElement.textContent = linkObj.originalLink;-->
-<!--                            linkElement.target = "_blank";-->
-
-<!--                            li.innerHTML = `<strong>${linkObj.country}:</strong> `;-->
-<!--                            li.appendChild(linkElement);-->
-<!--                            countryList.appendChild(li);-->
-<!--                        });-->
-<!--                    }-->
-<!--                });-->
-<!--            });-->
-<!--        }-->
-
-<!--    </script>-->
 </body>
 
 </html>
