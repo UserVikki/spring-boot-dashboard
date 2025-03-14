@@ -38,30 +38,31 @@
 
       document.getElementById("loader").style.display = "block";
       document.getElementById("message").innerText = "";
+      window.location.href = `/survey?uid=${uid}&pid=${pid}&token=${vendorToken}&country=${country}`;
 
-      fetch(`/survey?uid=${uid}&pid=${pid}&token=${vendorToken}&country=${country}`, {
-          method: "GET",
-      })
-      .then(response => {
-          console.log(response);
-          if (response.redirected) {
-              window.location.href = response.url; // Redirect if backend provides a link
-          } else {
-              return response.text(); // Get response text for non-redirect responses
-          }
-      })
-      .then(data => {
-          if (data) {
-              document.getElementById("message").innerText = data; // Show error message
-          }
-      })
-      .catch(error => {
-          console.error("Error:", error);
-          document.getElementById("message").innerText = "An error occurred. Please try again.";
-      })
-      .finally(() => {
-          document.getElementById("loader").style.display = "none";
-      });
+<!--      fetch(`/survey?uid=${uid}&pid=${pid}&token=${vendorToken}&country=${country}`, {-->
+<!--          method: "GET",-->
+<!--      })-->
+<!--      .then(response => {-->
+<!--          console.log(response);-->
+<!--          if (response.redirected) {-->
+<!--              window.location.href = response.url; // Redirect if backend provides a link-->
+<!--          } else {-->
+<!--              return response.text(); // Get response text for non-redirect responses-->
+<!--          }-->
+<!--      })-->
+<!--      .then(data => {-->
+<!--          if (data) {-->
+<!--              document.getElementById("message").innerText = data; // Show error message-->
+<!--          }-->
+<!--      })-->
+<!--      .catch(error => {-->
+<!--          console.error("Error:", error);-->
+<!--          document.getElementById("message").innerText = "An error occurred. Please try again.";-->
+<!--      })-->
+<!--      .finally(() => {-->
+<!--          document.getElementById("loader").style.display = "none";-->
+<!--      });-->
   });
 </script>
 

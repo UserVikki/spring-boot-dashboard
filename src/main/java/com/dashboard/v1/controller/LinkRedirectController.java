@@ -124,7 +124,9 @@ public class LinkRedirectController {
             headers.setLocation(URI.create(redirectUrl));
 
             // Return a redirect response (HTTP 302 Found) to send the user to the original frontend page.
-            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+            return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(redirectUrl)).build();
+
+//            return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
     }
 
