@@ -57,5 +57,7 @@ public class User {
     @Column(name = "project_id")
     private List<String> projectsId;
 
-}
+    @Enumerated(EnumType.STRING)
+    private IsRemoved isShown = IsRemoved.show;
 
+}

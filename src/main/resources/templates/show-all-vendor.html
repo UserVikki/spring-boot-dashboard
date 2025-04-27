@@ -31,6 +31,15 @@
     <!-- Responsive datatable examples -->
     <link href="/assets/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
           type="text/css" />
+
+    <script>
+        (function() {
+            const token = localStorage.getItem("jwtToken");
+            if (!token) {
+                window.location.replace("/login"); // faster redirect than href
+            }
+        })();
+    </script>
 </head>
 
 <body>
@@ -46,22 +55,21 @@
             <div class="d-flex">
                 <!-- LOGO -->
                 <div class="navbar-brand-box">
-                    <a href="dashboard.html" class="logo logo-dark">
+                    <a href="/dashboard" class="logo logo-dark">
                             <span class="logo-sm">
                                 <img src="/assets/images/logo-sm.svg" alt="" height="24">
                             </span>
                         <span class="logo-lg">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Research Fox</span>
-
+                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Amigo Insights</span>
                             </span>
                     </a>
 
-                    <a href="dashboard.html" class="logo logo-light">
+                    <a href="/dashboard" class="logo logo-light">
                             <span class="logo-sm">
                                 <img src="/assets/images/logo-sm.svg" alt="" height="24">
                             </span>
                         <span class="logo-lg">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Research Fox</span>
+                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Amigo Insights</span>
                             </span>
                     </a>
                 </div>
@@ -251,6 +259,7 @@
                                 <th>Email</th>
                                 <th>Company</th>
                                 <th>Action</th>
+                                <th>Remove</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -268,11 +277,11 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-6">
-                        <script>document.write(new Date().getFullYear())</script> © Research Fox.
+                        <script>document.write(new Date().getFullYear())</script> © Amigo Insights.
                     </div>
                     <div class="col-sm-6">
                         <div class="text-sm-end d-none d-sm-block">
-                            Design & Develop by <a href="#!" class="text-decoration-underline">ResearchFox</a>
+                            Design & Develop by <a href="#!" class="text-decoration-underline">AmigoInsights</a>
                         </div>
                     </div>
                 </div>
@@ -437,6 +446,11 @@
                 <td>${user.email}</td>
                 <td>${user.companyName}</td>
                 <td><a href="${vendorUrl}"><button type="button" class="btn btn-success view-links">View Vendor</button></a></td>
+                <td>
+                      <button class="btn ${getStatusClass(user.isShown)}" onclick="toggleStatus(this, '${user.username}')">
+                          ${user.isShown}
+                      </button>
+                </td>
             </tr>`;
 
             // ✅ Use insertAdjacentHTML to avoid re-parsing the entire innerHTML
@@ -447,6 +461,27 @@
         initializeDataTable();
     }
 
+  function toggleStatus(button, username) {
+      let currentStatus = button.innerText.trim();
+      let newStatus = currentStatus.toLowerCase() === "show" ? "hide" : "show";
+
+      fetch(`/status/update/${username}`)
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  // Update button text and class
+                  button.innerText = newStatus;
+                  button.className = `btn ${getStatusClass(newStatus)}`;
+              } else {
+                  alert("Failed to update status.");
+              }
+          })
+      .catch(error => console.error("Error updating status:", error));
+  }
+
+  function getStatusClass(status) {
+      return status.toLowerCase() === "show" ? "btn-success" : "btn-danger";
+  }
     function initializeDataTable() {
         $("#example").DataTable({
             responsive: true,

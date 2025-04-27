@@ -5,26 +5,31 @@ import com.dashboard.v1.repository.ProjectRepository;
 import com.dashboard.v1.repository.SurveyResponseRepository;
 import com.dashboard.v1.repository.UserRepository;
 import com.dashboard.v1.repository.VendorProjectLinkRepository;
+import com.dashboard.v1.service.IPInfoService;
+import com.dashboard.v1.util.SslUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 public class LinkRedirectController {
@@ -41,13 +46,16 @@ public class LinkRedirectController {
     private ProjectRepository projectRepository;
 
     @Autowired
+    private IPInfoService iPInfoService;
+
+    @Autowired
     private UserRepository userRepository;
     @GetMapping("/survey")
     public ResponseEntity<String> vendorClick(@RequestParam("uid") String uid,
                                               @RequestParam("pid") String pid,
                                               @RequestParam("token") String token,
                                               @RequestParam("country") String country,
-                                              HttpServletRequest request) {
+                                              HttpServletRequest request) throws UnsupportedEncodingException {
 
         logger.info("Received vendor click callback with uid: {} , pid: {}, token: {}", uid, pid, token);
 
@@ -69,7 +77,14 @@ public class LinkRedirectController {
             return ResponseEntity.ok("ALREADY ATTEMPTED SURVEY");
         } else {
             String ip = getClientIp(request);
-            List<SurveyResponse> matchingIpSurveys = surveyResponseRepository.findByIpAddress(ip);
+
+            SslUtil.disableSslVerification();
+
+            String countryCode = iPInfoService.getIPInfo(ip);
+
+            if(countryCode!=null && !countryCode.equalsIgnoreCase(country)) return ResponseEntity.ok("Access restricted: Your IP address does not correspond to the selected country. ;)");
+
+            List<SurveyResponse> matchingIpSurveys = surveyResponseRepository.findByIpAddress(ip, pid);
             for (SurveyResponse survey : matchingIpSurveys) {
                 if (Objects.equals(survey.getProjectId(), pid)) {
                     return ResponseEntity.ok("ALREADY ATTEMPTED SURVEY");
@@ -100,17 +115,24 @@ public class LinkRedirectController {
             // Optionally, fetch project details using the pid.
             // For example, assume Project is an entity that contains details like the original link.
             String redirectUrl = null;
-                Project project = projectOpt.get();
-                // Example: set country from project details
-                newResponse.setCountry(country);
-                List<CountryLink> links = project.getCountryLinks();
+            Project project = projectOpt.get();
+            // Example: set country from project details
+            newResponse.setCountry(country);
+            List<CountryLink> links = project.getCountryLinks();
 
-                // Find the first matching country and get its originalLink
-                redirectUrl = links.stream()
-                        .filter(link -> Objects.equals(link.getCountry(), country))
-                        .map(CountryLink::getOriginalLink)
-                        .findFirst()
-                        .orElse(null); // or set a default URL if needed
+            // Find the first matching country and get its originalLink
+            redirectUrl = links.stream()
+                    .filter(link -> Objects.equals(link.getCountry().name(), country))
+                    .map(CountryLink::getOriginalLink)
+                    .findFirst()
+                    .orElse(null); // or set a default URL if needed
+
+            if(redirectUrl == null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("no survey links found in the project, please create new project with same links properly");
+            }
+
+            String url = redirectUrl.trim();
 
 
             // Set the survey status (for example, IN_PROGRESS)
@@ -118,15 +140,35 @@ public class LinkRedirectController {
 
             // Save the new survey response to the database.
             surveyResponseRepository.save(newResponse);
-
             // Build the headers to perform a redirect to the original link.
             HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create(redirectUrl));
+            // Regex pattern to find the `uid=` parameter and replace its value
+            Pattern pattern = Pattern.compile("([?&]uid=)([^&]*)");
+            Matcher matcher = pattern.matcher(url);
 
-            // Return a redirect response (HTTP 302 Found) to send the user to the original frontend page.
-            return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(redirectUrl)).build();
+            if (matcher.find()) {
+                // Replace existing uid value with actual uid
+                url = matcher.replaceFirst("$1" + URLEncoder.encode(uid, String.valueOf(StandardCharsets.UTF_8)));
+            } else {
+                // If uid parameter is not found, append it to the URL
+                url += (url.contains("?") ? "&" : "?") + "uid=" + URLEncoder.encode(uid, String.valueOf(StandardCharsets.UTF_8));
+            }
 
-//            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+            if (!isValidURL(url)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid redirect URL: " + url);
+            }
+            headers.setLocation(URI.create(url));
+
+            return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(url)).build();
+        }
+    }
+
+    private boolean isValidURL(String url) {
+        try {
+            new URI(url);
+            return true;
+        } catch (URISyntaxException e) {
+            return false;
         }
     }
 

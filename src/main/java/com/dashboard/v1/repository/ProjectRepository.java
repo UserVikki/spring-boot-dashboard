@@ -55,8 +55,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     Optional<Project> findByProjectIdentifier(String pId);
 
-    @Query("SELECT p FROM Project p where p.status='OPEN' order by p.createdAt")
-    List<Project> findAll();
+    @Query("SELECT p FROM Project p WHERE p.status = :status ORDER BY p.createdAt")
+    List<Project> findAll(@Param("status") ProjectStatus status);
 
     @Query("SELECT p FROM Project p JOIN p.vendorsUsername v WHERE v = :vendorUsername")
     List<Project> findProjectsByVendorUsername(@Param("vendorUsername") String vendorUsername);

@@ -1,7 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Spring Boot MVC</title>
+    <title>Amigo Insights</title>
+    <script>
+        (function() {
+            const token = localStorage.getItem("jwtToken");
+            if (!token) {
+                window.location.replace("/login"); // faster redirect than href
+            }
+        })();
+    </script>
 </head>
 <body>
 <h2 th:text="${message}"></h2>

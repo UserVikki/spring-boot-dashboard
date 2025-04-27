@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 
 <head>
 
@@ -30,6 +30,14 @@
     <!-- Responsive datatable examples -->
     <link href="/assets/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
         type="text/css" />
+    <script>
+        (function() {
+            const token = localStorage.getItem("jwtToken");
+            if (!token) {
+                window.location.replace("/login"); // faster redirect than href
+            }
+        })();
+    </script>
 </head>
 
 <body>
@@ -45,22 +53,21 @@
                 <div class="d-flex">
                     <!-- LOGO -->
                     <div class="navbar-brand-box">
-                        <a href="dashboard.html" class="logo logo-dark">
+                        <a href="/dashboard" class="logo logo-dark">
                             <span class="logo-sm">
                                 <img src="/assets/images/logo-sm.svg" alt="" height="24">
                             </span>
                             <span class="logo-lg">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Research Fox</span>
-
+                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Amigo Insights</span>
                             </span>
                         </a>
 
-                        <a href="dashboard.html" class="logo logo-light">
+                        <a href="/dashboard" class="logo logo-light">
                             <span class="logo-sm">
                                 <img src="/assets/images/logo-sm.svg" alt="" height="24">
                             </span>
                             <span class="logo-lg">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Research Fox</span>
+                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Amigo Insights</span>
                             </span>
                         </a>
                     </div>
@@ -319,7 +326,13 @@
                                                 <div class="row fieldGroup">
                                                     <div class="col-lg-2 mb-3">
                                                         <label for="country" class="form-label">Country Name</label>
-                                                        <input type="text" class="form-control" name="country[]" required>
+                                                        <select name="country[]" class="form-select" required>
+                                                            <option value="">-- Select Country --</option>
+                                                            <!-- Dynamically populated -->
+                                                            <th:block th:each="country : ${countries}">
+                                                                <option th:value="${country.code}" th:text="${country.name}"></option>
+                                                            </th:block>
+                                                        </select>
                                                     </div>
                                                     <div class="col-lg-2 mb-3">
                                                         <label for="links" class="form-label">Links</label>
@@ -332,7 +345,10 @@
                                             </div>
 
 
-                                            
+
+
+
+
                                             <button type="submit" id="submitForm"
                                                 class="btn btn-primary mt-4">Submit</button>
                                             <!-- Loader (hidden initially) -->
@@ -356,16 +372,23 @@
             </div>
             <!-- End Page-content -->
 
+            <template id="countryOptionsTemplate">
+                <option value="" selected disabled>-- Select Country --</option>
+                <th:block th:each="country : ${countries}">
+                    <option th:value="${country.code}" th:text="${country.name}"></option>
+                </th:block>
+            </template>
+
 
             <footer class="footer">
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-sm-6">
-                            <script>document.write(new Date().getFullYear())</script> © Research Fox.
+                            <script>document.write(new Date().getFullYear())</script> © Amigo Insights.
                         </div>
                         <div class="col-sm-6">
                             <div class="text-sm-end d-none d-sm-block">
-                                Design & Develop by <a href="#!" class="text-decoration-underline">ResearchFox</a>
+                                Design & Develop by <a href="#!" class="text-decoration-underline">AmigoInsights</a>
                             </div>
                         </div>
                     </div>
@@ -486,27 +509,35 @@
 
 <script>
     $(document).ready(function(){
-        $(".add").click(function(){
-            let fieldHTML = `<div class="row fieldGroup">
-                                <div class="col-lg-2 mb-3">
-                                    <label for="country" class="form-label">Country Name</label>
-                                    <input type="text" class="form-control" name="country[]">
-                                </div>
-                                <div class="col-lg-2 mb-3">
-                                    <label for="links" class="form-label">Links</label>
-                                    <input type="text" class="form-control" name="links[]">
-                                </div>
-                                <div class="col-lg-2 mb-3 d-flex align-items-end">
-                                    <button type="button" class="btn btn-danger remove">Remove</button>
-                                </div>
-                            </div>`;
+        $(".add").click(function () {
+            let options = $("#countryOptionsTemplate").html();
+
+            let fieldHTML = `
+                <div class="row fieldGroup">
+                    <div class="col-lg-2 mb-3">
+                        <label for="country" class="form-label">Country Name</label>
+                        <select name="country[]" class="form-select" required>
+                            ${options}
+                        </select>
+                    </div>
+                    <div class="col-lg-2 mb-3">
+                        <label for="links" class="form-label">Links</label>
+                        <input type="text" class="form-control" name="links[]">
+                    </div>
+                    <div class="col-lg-2 mb-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger remove">Remove</button>
+                    </div>
+                </div>
+            `;
             $("#dynamicFields").append(fieldHTML);
         });
+
 
         $(document).on("click", ".remove", function(){
             $(this).closest(".fieldGroup").remove();
         });
     });
+
 </script>
     <script>
         const token = localStorage.getItem("jwtToken");
@@ -516,9 +547,12 @@
                 document.getElementById("addForm").addEventListener("submit", function(event) {
                 event.preventDefault(); // Prevent default form submission
                 // Select all country and link input fields
-                let countryInputs = document.querySelectorAll("input[name='country[]']");
+                let countryInputs = document.querySelectorAll("select[name='country[]']");
                 let linkInputs = document.querySelectorAll("input[name='links[]']");
-
+                let countryValues = Array.from(countryInputs).map(input => input.value);
+                console.log("Countries:", countryValues);
+                let linkValues = Array.from(linkInputs).map(input => input.value);
+                console.log("Links:", linkValues);
                 // Construct an array of objects containing country-link pairs
                 let countryLinks = Array.from(countryInputs).map((input, index) => ({
                     country: input.value,
@@ -527,7 +561,7 @@
                 let formData = {
                     projectIdentifier: document.getElementById("pid").value,
                     status: document.getElementById("status").value,
-                    Quota: parseInt(document.getElementById("quota").value) || 0,
+                    Quota: document.getElementById("quota").value,
                     loi: document.getElementById("loi").value,
                     ir: document.getElementById("ir").value,
                     counts: document.getElementById("counts").value,

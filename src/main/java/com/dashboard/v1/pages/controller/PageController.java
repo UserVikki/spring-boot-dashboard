@@ -1,8 +1,9 @@
 package com.dashboard.v1.pages.controller;
 
-import com.dashboard.v1.entity.User;
 import com.dashboard.v1.repository.UserRepository;
+import com.dashboard.v1.service.CountryService;
 import com.dashboard.v1.service.VendorService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,11 +11,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Optional;
+import java.util.List;
 
 
 @Controller
+@RequiredArgsConstructor
 public class PageController {
+
+    public final CountryService countryService;
 
     @Autowired
     private VendorService vendorService;
@@ -44,7 +48,9 @@ public class PageController {
     }
 
     @GetMapping("/create/projects")
-    public String createProject() {
+    public String createProject(Model model) {
+        List<CountryService.CountryDTO> countries = countryService.getAllCountries();
+        model.addAttribute("countries", countries);
         return "create-projects";
     }
 

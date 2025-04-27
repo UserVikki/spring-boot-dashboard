@@ -18,6 +18,8 @@ public class Project {
 
     @Column(nullable = false, unique = true)
     private String projectIdentifier;
+
+    @Enumerated(EnumType.STRING)
     private ProjectStatus status; // ACTIVE or INACTIVE
     private String quota;
     private String loi;

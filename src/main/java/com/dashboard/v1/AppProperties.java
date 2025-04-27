@@ -13,6 +13,8 @@ public class AppProperties {
 
     private String domain;
 
+    private String tokenForIPInfo;
+
     @PostConstruct
     public void init() {
 //        System.out.println("Secret Key Loaded: " + secretKey);
@@ -33,5 +35,13 @@ public class AppProperties {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public String getTokenForIPInfo() {
+        return tokenForIPInfo;
+    }
+
+    public void setTokenForIPInfo(String tokenForIPInfo) {
+        this.tokenForIPInfo = tokenForIPInfo;
     }
 }

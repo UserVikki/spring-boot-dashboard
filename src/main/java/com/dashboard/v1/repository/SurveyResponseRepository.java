@@ -45,6 +45,7 @@ public interface SurveyResponseRepository extends JpaRepository<SurveyResponse, 
     @Query("SELECT s FROM SurveyResponse s WHERE s.vendorUsername = :vendorUsername")
     Optional<List<SurveyResponse>> findByVendorUsername(@Param("vendorUsername") String vendorUsername);
 
-    List<SurveyResponse> findByIpAddress(String ipAddress);
+    @Query("SELECT s FROM SurveyResponse s WHERE s.ipAddress = :ipAddress AND s.projectId = :projectId")
+    List<SurveyResponse> findByIpAddress(String ipAddress, String projectId);
 
 }

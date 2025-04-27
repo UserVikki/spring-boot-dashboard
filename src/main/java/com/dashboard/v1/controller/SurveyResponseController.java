@@ -30,36 +30,38 @@ public class SurveyResponseController {
     private final SurveyResponseRepository surveyResponseRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     @GetMapping("/complete")
     public ResponseEntity<?> submitComplete(@RequestParam String PID, @RequestParam String UID) {
-        logger.info("inside SurveyResponseController /survey/complete PID : {}, UID : {}",PID,UID);
-        return saveSurveyResponse(PID, UID, SurveyStatus.COMPLETE);
+        logger.info("inside SurveyResponseController /survey/complete UID : {}, PID : {}", UID, PID);
+        return saveSurveyResponse(UID, SurveyStatus.COMPLETE);
     }
 
     @GetMapping("/terminate")
     public ResponseEntity<?> submitTerminate(@RequestParam String PID, @RequestParam String UID) {
-        logger.info("inside SurveyResponseController /survey/terminate PID : {}, UID : {}",PID,UID);
-        return saveSurveyResponse(PID, UID, SurveyStatus.TERMINATE);
+        logger.info("inside SurveyResponseController /survey/terminate UID : {}, PID : {}", UID, PID);
+        return saveSurveyResponse(UID, SurveyStatus.TERMINATE);
     }
 
     @GetMapping("/quotafull")
     public ResponseEntity<?> submitQuotaFull(@RequestParam String PID, @RequestParam String UID) {
-        logger.info("inside SurveyResponseController /survey/quotafull PID : {}, UID : {}",PID,UID);
-        return saveSurveyResponse(PID, UID, SurveyStatus.QUOTAFULL);
+        logger.info("inside SurveyResponseController /survey/quotafull UID : {}, PID : {}", UID, PID);
+        return saveSurveyResponse(UID, SurveyStatus.QUOTAFULL);
     }
 
-    private ResponseEntity<?> saveSurveyResponse(String PID, String UID, SurveyStatus status) {
+    private ResponseEntity<?> saveSurveyResponse(String UID, SurveyStatus status) {
         // Validate the project exists.
-        Project project = projectRepository.findByProjectIdentifier(PID)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
+
 
         Optional<SurveyResponse> surveyResponse = surveyResponseRepository.findByUId(UID);
 
         if(!surveyResponse.isPresent()){
             return ResponseEntity.ok("Survey response does not match with any vendor click");
         }
+
+        Project project = projectRepository.findByProjectIdentifier(surveyResponse.get().getProjectId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
         // Retrieve the SurveyResponse object from the Optional
         SurveyResponse res = surveyResponse.get();
         if(!(surveyResponse.get().getStatus() == SurveyStatus.IN_PROGRESS)) return ResponseEntity.ok("THIS UID is already registered for a response ");;
@@ -77,7 +79,7 @@ public class SurveyResponseController {
 
         if(!vendor.isPresent())
         {
-            logger.info("vendor not found for this survey submission PID : {}, UID : {} ",PID,UID);
+            logger.info("vendor not found for this survey submission projectId : {}, UID : {} ", project.getProjectIdentifier(), UID);
             return ResponseEntity.ok("vendor not found for this survey submission");
         }
         // get the vendor api according to status (complete,terminate,quotafull) and make a http request to them with PID and UID
@@ -89,7 +91,7 @@ public class SurveyResponseController {
 
         // Prepare request parameters
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(vendorApiUrl)
-                .queryParam("pid", PID)
+                .queryParam("pid", project.getProjectIdentifier())
                 .queryParam("uid", UID);
 
         try {

@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.transaction.Transactional;
 import java.util.*;
 
 @RestController
@@ -40,7 +41,7 @@ public class AdminController {
     private final VendorService vendorService;
     private final SurveyResponseRepository surveyResponseRepository;
 
-//    private final String domain = "localhost:8080";
+    //    private final String domain = "localhost:8080";
     private final AppProperties appProperties;
 
 
@@ -216,27 +217,27 @@ public class AdminController {
         List<SurveyResponse> surveyResponses = surveyResponseRepository.findByProjectIdIn(projectIds);
         Map<String, GetVendorResponse> projectResponseMap = new HashMap<>();
 
-            projectIds.forEach(projectId ->
-            {
-                Optional<Project> project = projectRepository.findByProjectIdentifier(projectId);
-                if(project.isPresent()) {
-                    GetVendorResponse getVendorResponse = new GetVendorResponse();
-                    getVendorResponse.setProjectId(projectId);
-                    getVendorResponse.setComplete("0");
-                    getVendorResponse.setTerminate("0");
-                    getVendorResponse.setQuotafull("0");
-                    List<CountryLink> links = new ArrayList<>();
-                    project.get().getCountryLinks().forEach(countrylink ->
-                    {
-                        CountryLink link = new CountryLink();
-                        link.setCountry(countrylink.getCountry());
-                        link.setOriginalLink(appProperties.getDomain()+"/survey/"+ vendor.getUserToken() +"/"+countrylink.getCountry()+"?PID="+projectId+"&UID=111");
-                        links.add(link);
-                    });
-                    getVendorResponse.setLinks(links);
-                    projectResponseMap.put(project.get().getProjectIdentifier(), getVendorResponse);
-                }
-            });
+        projectIds.forEach(projectId ->
+        {
+            Optional<Project> project = projectRepository.findByProjectIdentifier(projectId);
+            if(project.isPresent()) {
+                GetVendorResponse getVendorResponse = new GetVendorResponse();
+                getVendorResponse.setProjectId(projectId);
+                getVendorResponse.setComplete("0");
+                getVendorResponse.setTerminate("0");
+                getVendorResponse.setQuotafull("0");
+                List<CountryLink> links = new ArrayList<>();
+                project.get().getCountryLinks().forEach(countrylink ->
+                {
+                    CountryLink link = new CountryLink();
+                    link.setCountry(countrylink.getCountry());
+                    link.setOriginalLink(appProperties.getDomain()+"/survey/"+ vendor.getUserToken() +"/"+countrylink.getCountry()+"?PID="+projectId+"&UID=111");
+                    links.add(link);
+                });
+                getVendorResponse.setLinks(links);
+                projectResponseMap.put(project.get().getProjectIdentifier(), getVendorResponse);
+            }
+        });
         for (SurveyResponse survey : surveyResponses) {
             String projectId = survey.getProjectId();
             SurveyStatus status = survey.getStatus();
@@ -269,6 +270,6 @@ public class AdminController {
 
     @GetMapping("/clients/get/")
     public List<Client> getClient() {
-        return clientRepository.findAll();
+        return clientRepository.findAll(IsRemoved.show);
     }
 }

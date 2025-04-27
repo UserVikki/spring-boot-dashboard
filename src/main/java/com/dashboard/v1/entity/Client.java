@@ -40,4 +40,7 @@ public class Client {
             this.token = UUID.randomUUID().toString(); // Generates a unique token
         }
     }
+
+    @Enumerated(EnumType.STRING)
+    private IsRemoved isShown = IsRemoved.show;
 }

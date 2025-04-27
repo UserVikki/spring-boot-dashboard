@@ -76,7 +76,7 @@ public class ProjectController {
     @PreAuthorize("hasRole('ADMIN')")
     public List<Project> getAllProjects() {
         logger.info("inside ProjectController /projects/all ");
-        return projectRepository.findAll();
+        return projectRepository.findAll(ProjectStatus.OPEN);
     }
 
     // ✅ Fetch projects assigned to vendor (Vendor only)

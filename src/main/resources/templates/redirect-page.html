@@ -5,11 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Survey Redirect</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <script>
+    (function() {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+            window.location.replace("/login"); // faster redirect than href
+        }
+    })();
+  </script>
 </head>
 <body class="d-flex justify-content-center align-items-center vh-100 bg-light">
 
 <div class="text-center">
-  <h2>ResearchFox Survey</h2>
+  <h2>Amigo Insights</h2>
   <p>Please click the button to proceed.</p>
   <button id="continueBtn" class="btn btn-primary">Continue</button>
   <div id="loader" class="mt-3" style="display: none;">

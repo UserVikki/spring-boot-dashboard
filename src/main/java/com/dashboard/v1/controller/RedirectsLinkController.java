@@ -21,9 +21,9 @@ public class RedirectsLinkController {
         logger.info("inside RedirectsController /redirects");
         Map<String, String> response = new HashMap<>();
 
-        response.put("complete", "https://rfhivex.com/survey/complete?UID=111&PID=p0");
-        response.put("terminate", "https://rfhivex.com/survey/terminate?UID=111&PID=p0");
-        response.put("quotafull", "https://rfhivex.com/survey/quotafull?UID=111&PID=p0");
+        response.put("complete", "https://amigoinsight.com/survey/complete?PID=111&UID=xxxx");
+        response.put("terminate", "https://amigoinsight.com/survey/terminate?PID=111&UID=xxxx");
+        response.put("quotafull", "https://amigoinsight.com/survey/quotafull?PID=111&UID=xxxx");
 
         return ResponseEntity.ok(response);
     }

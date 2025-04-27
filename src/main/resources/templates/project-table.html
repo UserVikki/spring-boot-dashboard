@@ -46,22 +46,21 @@
                 <div class="d-flex">
                     <!-- LOGO -->
                     <div class="navbar-brand-box">
-                        <a href="dashboard.html" class="logo logo-dark">
+                        <a href="/dashboard" class="logo logo-dark">
                             <span class="logo-sm">
                                 <img src="/assets/images/logo-sm.svg" alt="" height="24">
                             </span>
                             <span class="logo-lg">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Research Fox</span>
-
+                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Amigo Insights</span>
                             </span>
                         </a>
 
-                        <a href="dashboard.html" class="logo logo-light">
+                        <a href="/dashboard" class="logo logo-light">
                             <span class="logo-sm">
                                 <img src="/assets/images/logo-sm.svg" alt="" height="24">
                             </span>
                             <span class="logo-lg">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Research Fox</span>
+                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Amigo Insights</span>
                             </span>
                         </a>
                     </div>
@@ -312,11 +311,11 @@
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-sm-6">
-                            <script>document.write(new Date().getFullYear())</script> © Research Fox.
+                            <script>document.write(new Date().getFullYear())</script> © Amigo Insights.
                         </div>
                         <div class="col-sm-6">
                             <div class="text-sm-end d-none d-sm-block">
-                                Design & Develop by <a href="#!" class="text-decoration-underline">ResearchFox</a>
+                                Design & Develop by <a href="#!" class="text-decoration-underline">AmigoInsights</a>
                             </div>
                         </div>
                     </div>
@@ -594,6 +593,9 @@
           tableBody.innerHTML = ""; // Clear table before adding new data
 
           data.forEach(project => {
+
+              console.log(project);
+
               let row = document.createElement("tr");
               row.setAttribute("data-country-links", JSON.stringify(project.countryLinks));
               row.setAttribute("data-project-vendors", JSON.stringify(project.vendorsUsername));
@@ -653,7 +655,7 @@
       if (event.target.classList.contains('view-links')) {
           let row = event.target.closest('tr');
           let countryLinks = JSON.parse(row.getAttribute('data-country-links'));
-
+          console.log("after clicking view links"+countryLinks);
           let countryList = document.getElementById('countryList');
           countryList.innerHTML = ""; // Clear previous entries
 
