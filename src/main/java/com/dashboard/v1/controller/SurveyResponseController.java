@@ -4,6 +4,7 @@ import com.dashboard.v1.entity.*;
 import com.dashboard.v1.repository.ProjectRepository;
 import com.dashboard.v1.repository.SurveyResponseRepository;
 import com.dashboard.v1.repository.UserRepository;
+import com.dashboard.v1.util.SslUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,20 +34,20 @@ public class SurveyResponseController {
     private final RestTemplate restTemplate;
 
     @GetMapping("/complete")
-    public ResponseEntity<?> submitComplete(@RequestParam String PID, @RequestParam String UID) {
-        logger.info("inside SurveyResponseController /survey/complete UID : {}, PID : {}", UID, PID);
+    public ResponseEntity<?> submitComplete(@RequestParam String UID) {
+        logger.info("inside SurveyResponseController /survey/complete UID : {}", UID);
         return saveSurveyResponse(UID, SurveyStatus.COMPLETE);
     }
 
     @GetMapping("/terminate")
-    public ResponseEntity<?> submitTerminate(@RequestParam String PID, @RequestParam String UID) {
-        logger.info("inside SurveyResponseController /survey/terminate UID : {}, PID : {}", UID, PID);
+    public ResponseEntity<?> submitTerminate(@RequestParam String UID) {
+        logger.info("inside SurveyResponseController /survey/terminate UID : {}", UID);
         return saveSurveyResponse(UID, SurveyStatus.TERMINATE);
     }
 
     @GetMapping("/quotafull")
-    public ResponseEntity<?> submitQuotaFull(@RequestParam String PID, @RequestParam String UID) {
-        logger.info("inside SurveyResponseController /survey/quotafull UID : {}, PID : {}", UID, PID);
+    public ResponseEntity<?> submitQuotaFull(@RequestParam String UID) {
+        logger.info("inside SurveyResponseController /survey/quotafull UID : {}", UID);
         return saveSurveyResponse(UID, SurveyStatus.QUOTAFULL);
     }
 
@@ -83,24 +84,33 @@ public class SurveyResponseController {
             return ResponseEntity.ok("vendor not found for this survey submission");
         }
         // get the vendor api according to status (complete,terminate,quotafull) and make a http request to them with PID and UID
+        // Get the original vendor API URL
         String vendorApiUrl = getVendorApiUrl(vendor.get(), status);
 
         if (vendorApiUrl == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid survey status");
         }
 
-        // Prepare request parameters
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(vendorApiUrl)
-                .queryParam("pid", project.getProjectIdentifier())
-                .queryParam("uid", UID);
+        // ✅ Trim the URL by removing from the last '=' to the end
+        int lastEqualIndex = vendorApiUrl.lastIndexOf('=');
+        if (lastEqualIndex != -1) {
+            vendorApiUrl = vendorApiUrl.substring(0, lastEqualIndex);
+        }
+
+        // ✅ Add new uid parameter
+        vendorApiUrl += "="+UID;
+
+        // Optional: build URI (only if more params needed)
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(vendorApiUrl);
 
         try {
-            // Make HTTP GET request to the vendor API
+            SslUtil.disableSslVerification();
             ResponseEntity<String> response = restTemplate.getForEntity(builder.toUriString(), String.class);
             return ResponseEntity.ok("Vendor notified successfully: " + response.getBody());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to notify vendor: " + e.getMessage());
         }
+
     }
 
     @GetMapping("/api/survey-responses/all")

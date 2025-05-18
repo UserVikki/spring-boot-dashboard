@@ -7,6 +7,7 @@ import com.dashboard.v1.repository.UserRepository;
 import com.dashboard.v1.repository.VendorProjectLinkRepository;
 import com.dashboard.v1.service.IPInfoService;
 import com.dashboard.v1.util.SslUtil;
+import com.dashboard.v1.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -47,6 +49,9 @@ public class LinkRedirectController {
 
     @Autowired
     private IPInfoService iPInfoService;
+
+    @Autowired
+    private UrlUtils urlUtils;
 
     @Autowired
     private UserRepository userRepository;
@@ -143,16 +148,59 @@ public class LinkRedirectController {
             // Build the headers to perform a redirect to the original link.
             HttpHeaders headers = new HttpHeaders();
             // Regex pattern to find the `uid=` parameter and replace its value
-            Pattern pattern = Pattern.compile("([?&]uid=)([^&]*)");
-            Matcher matcher = pattern.matcher(url);
+//            Pattern pattern = Pattern.compile("([?&]uid=)([^&]*)");
+//            Matcher matcher = pattern.matcher(originalLink);
 
-            if (matcher.find()) {
-                // Replace existing uid value with actual uid
-                url = matcher.replaceFirst("$1" + URLEncoder.encode(uid, String.valueOf(StandardCharsets.UTF_8)));
-            } else {
-                // If uid parameter is not found, append it to the URL
-                url += (url.contains("?") ? "&" : "?") + "uid=" + URLEncoder.encode(uid, String.valueOf(StandardCharsets.UTF_8));
-            }
+//            String key = "uid"; // this can be any key
+//
+//            // Build regex dynamically to find 'key=...'
+//            String regex = key + "=[^&]*$";
+//
+//            if (url.matches(".*" + regex)) {
+//                // Replace existing value for the key at the end
+//                url = url.replaceAll(regex, key + "=" + uid);
+//            } else {
+//                // Append new key-value if not present
+//                url += (url.contains("?") ? "&" : "?") + key + "=" + uid;
+//            }
+
+// Step 1: Extract last key from the URL
+
+            url = urlUtils.updateIfConditionMatches(url,uid);
+
+
+//            String key = null;
+//            int queryStart = url.indexOf('?');
+//            if (queryStart != -1) {
+//                String query = url.substring(queryStart + 1);
+//                String[] params = query.split("&");
+//                if (params.length > 0) {
+//                    String lastParam = params[params.length - 1];
+//                    int equalIndex = lastParam.indexOf('=');
+//                    if (equalIndex != -1) {
+//                        key = lastParam.substring(0, equalIndex);
+//                    }
+//                }
+//            }
+//
+//            if (key != null) {
+//
+//                // Step 2: Build regex and matcher
+//                Pattern pattern = Pattern.compile("([?&]" + key + "=)([^&]*)");
+//                Matcher matcher = pattern.matcher(url);
+//
+//                if (matcher.find()) {
+//                    // Replace existing value of the last key
+//                    url = matcher.replaceFirst(matcher.group(1) + uid);
+//                } else {
+//                    // Append if key not found
+//                    url += (url.contains("?") ? "&" : "?") + key + "=" + uid;
+//                }
+//            }
+
+            System.out.println(url);
+
+
 
             if (!isValidURL(url)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid redirect URL: " + url);

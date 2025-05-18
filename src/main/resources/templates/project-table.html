@@ -51,7 +51,7 @@
                                 <img src="/assets/images/logo-sm.svg" alt="" height="24">
                             </span>
                             <span class="logo-lg">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Amigo Insights</span>
+                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt" th:text="${companyName}">Amigo insight</span>
                             </span>
                         </a>
 
@@ -60,7 +60,8 @@
                                 <img src="/assets/images/logo-sm.svg" alt="" height="24">
                             </span>
                             <span class="logo-lg">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Amigo Insights</span>
+                                <img src="/assets/images/logo-sm.svg" alt="" height="24">
+                                <span class="logo-txt" th:text="${companyName}">Amigo insight</span>
                             </span>
                         </a>
                     </div>
@@ -258,45 +259,6 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-<!--                                    <tr data-links="https://example.com/project1"-->
-<!--                                        data-countries='[{"name":"India", "flag":"🇮🇳", "count":2},{"name":"Australia", "flag":"🇦🇺", "count":3}]'>-->
-<!--                                        <td>PJ001</td>-->
-<!--                                        <td><span class="badge bg-success">Active</span></td>-->
-<!--                                        <td>500</td>-->
-<!--                                        <td>10 min</td>-->
-<!--                                        <td>15%</td>-->
-<!--                                        <td>120</td>-->
-<!--                                        <td>-->
-<!--                                            <button type="button" class="btn btn-success view-links"-->
-<!--                                                data-bs-toggle="modal" data-bs-target="#linksModal">View Links</button>-->
-<!--                                        </td>-->
-<!--                                    </tr>-->
-<!--                                    <tr data-links="https://example.com/project2"-->
-<!--                                        data-countries='[{"name":"USA", "flag":"🇺🇸", "count":5},{"name":"UK", "flag":"🇬🇧", "count":2}]'>-->
-<!--                                        <td>PJ002</td>-->
-<!--                                        <td><span class="badge bg-warning">Pending</span></td>-->
-<!--                                        <td>300</td>-->
-<!--                                        <td>8 min</td>-->
-<!--                                        <td>10%</td>-->
-<!--                                        <td>90</td>-->
-<!--                                        <td>-->
-<!--                                            <button type="button" class="btn btn-success view-links"-->
-<!--                                                data-bs-toggle="modal" data-bs-target="#linksModal">View Links</button>-->
-<!--                                        </td>-->
-<!--                                    </tr>-->
-<!--                                    <tr data-links="https://example.com/project3"-->
-<!--                                        data-countries='[{"name":"Canada", "flag":"🇨🇦", "count":4},{"name":"Germany", "flag":"🇩🇪", "count":6}]'>-->
-<!--                                        <td>PJ003</td>-->
-<!--                                        <td><span class="badge bg-danger">Closed</span></td>-->
-<!--                                        <td>1000</td>-->
-<!--                                        <td>15 min</td>-->
-<!--                                        <td>20%</td>-->
-<!--                                        <td>250</td>-->
-<!--                                        <td>-->
-<!--                                            <button type="button" class="btn btn-success view-links"-->
-<!--                                                data-bs-toggle="modal" data-bs-target="#linksModal">View Links</button>-->
-<!--                                        </td>-->
-<!--                                    </tr>-->
                                 </tbody>
 
                             </table>
@@ -311,11 +273,11 @@
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-sm-6">
-                            <script>document.write(new Date().getFullYear())</script> © Amigo Insights.
+                            <script>document.write(new Date().getFullYear())</script> © <span th:text="${companyName}">Company</span>.
                         </div>
                         <div class="col-sm-6">
                             <div class="text-sm-end d-none d-sm-block">
-                                Design & Develop by <a href="#!" class="text-decoration-underline">AmigoInsights</a>
+                                Design & Develop by <a href="#!" class="text-decoration-underline" th:text="${companyName}">AmigoInsight</a>
                             </div>
                         </div>
                     </div>
@@ -406,153 +368,6 @@
         var allText = /*[[${'All'}]]*/ 'All';
     </script>
 
-    <!-- DataTables Initialization -->
-<!--    <script>-->
-<!--        $(document).ready(function () {-->
-<!--            $('#example').DataTable({-->
-<!--                responsive: true, // Enables responsive behavior-->
-<!--                lengthMenu: [-->
-<!--                        [10, 20, 50, 100, -1],-->
-<!--                        [10, 20, 50, 100, allText]-->
-<!--                    ],-->
-<!--                pageLength: 10, // Default rows per page-->
-<!--                dom: 'lBfrtip', // Enables buttons like export-->
-<!--                buttons: [-->
-<!--                    'copy', 'csv', 'excel', 'pdf', 'print'-->
-<!--                ],-->
-<!--                language: {-->
-<!--                    search: "Search Table:", // Customize search input placeholder-->
-<!--                    lengthMenu: "Show _MENU_ entries", // Customize length menu text-->
-<!--                }-->
-<!--            });-->
-<!--        });-->
-<!--    </script>-->
-
-
-    <!-- JavaScript to Handle Modal Data -->
-<!--    <script>-->
-<!--        document.querySelectorAll('.view-links').forEach(button => {-->
-<!--            button.addEventListener('click', function () {-->
-<!--            let row = this.closest('tr');-->
-<!--            let countryLinks = JSON.parse(row.getAttribute('data-country-links')); // Fetch country-links data-->
-
-<!--            let countryList = document.getElementById('countryList');-->
-<!--            countryList.innerHTML = ''; // Clear previous entries-->
-
-<!--            countryLinks.forEach(linkObj => {-->
-<!--                // Create a new list item-->
-<!--                let li = document.createElement('li');-->
-
-<!--                // Create a clickable link-->
-<!--                let linkElement = document.createElement('a');-->
-<!--                linkElement.href = linkObj.originalLink;-->
-<!--                linkElement.textContent = linkObj.originalLink;-->
-<!--                linkElement.target = "_blank";-->
-
-<!--                // Append text and link-->
-<!--                li.innerHTML = `<strong>${linkObj.country}:</strong> `;-->
-<!--                li.appendChild(linkElement);-->
-
-<!--                countryList.appendChild(li);-->
-<!--                    });-->
-<!--                });-->
-<!--        });-->
-
-<!--    </script>-->
-
-    <!-- JavaScript to Handle view vendors Data -->
-<!--    <script>-->
-<!--        document.addEventListener("DOMContentLoaded", function () {-->
-<!--            document.querySelectorAll('.view-vendors').forEach(button => {-->
-<!--                button.addEventListener('click', function () {-->
-<!--                    let row = this.closest('tr');-->
-<!--                    let vendors = JSON.parse(row.getAttribute('data-project-vendors')); // Fetch vendor usernames-->
-
-<!--                    let vendorList = document.getElementById('vendorList');-->
-<!--                    vendorList.innerHTML = ''; // Clear previous entries-->
-
-<!--                    // Loop through vendor usernames and add them to the modal list-->
-<!--                    vendors.forEach(vendor => {-->
-<!--                        let li = document.createElement('li');-->
-<!--                        li.textContent = vendor; // Display vendor username-->
-<!--                        vendorList.appendChild(li);-->
-<!--                    });-->
-<!--                });-->
-<!--            });-->
-<!--        });-->
-<!--    </script>-->
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-     // View Vendors Button
-     document.querySelectorAll(".view-vendors").forEach(button => {
-         button.addEventListener("click", function () {
-             let row = this.closest("tr");
-             let vendors = JSON.parse(row.getAttribute("data-project-vendors")) || []; // Fetch vendor usernames
-
-             let vendorList = document.getElementById("vendorList");
-             vendorList.innerHTML = ""; // Clear previous entries
-
-             vendors.forEach(vendor => {
-                 let li = document.createElement("li");
-                 li.textContent = vendor; // Display vendor username
-                 vendorList.appendChild(li);
-             });
-
-             // Show Vendor Modal and set focus
-             let vendorModal = new bootstrap.Modal(document.getElementById("vendorsModal"));
-             vendorModal.show();
-
-             setTimeout(() => {
-                 document.getElementById("vendorsModal").removeAttribute("aria-hidden"); // Ensure visibility
-                 document.getElementById("vendorsModal").focus(); // Shift focus inside modal
-             }, 100);
-         });
-     });
-
-     // View Links Button
-     document.querySelectorAll(".view-links").forEach(button => {
-         button.addEventListener("click", function () {
-             let row = this.closest("tr");
-             let countryLinks = JSON.parse(row.getAttribute("data-country-links")) || []; // Fetch country-links data
-
-             let countryList = document.getElementById("countryList");
-             countryList.innerHTML = ""; // Clear previous entries
-
-             countryLinks.forEach(linkObj => {
-                 let li = document.createElement("li");
-                 let linkElement = document.createElement("a");
-                 linkElement.href = linkObj.originalLink;
-                 linkElement.textContent = linkObj.originalLink;
-                 linkElement.target = "_blank";
-                 li.innerHTML = `<strong>${linkObj.country}:</strong> `;
-                 li.appendChild(linkElement);
-                 countryList.appendChild(li);
-             });
-
-             // Show Links Modal and set focus
-             let linksModal = new bootstrap.Modal(document.getElementById("linksModal"));
-             linksModal.show();
-
-             setTimeout(() => {
-                 document.getElementById("linksModal").removeAttribute("aria-hidden"); // Ensure visibility
-                 document.getElementById("linksModal").focus(); // Shift focus inside modal
-             }, 100);
-         });
-     });
-
-     // Ensure focus is removed when modals close
-     document.getElementById("vendorsModal").addEventListener("hidden.bs.modal", function () {
-         document.activeElement.blur();
-     });
-
-     document.getElementById("linksModal").addEventListener("hidden.bs.modal", function () {
-         document.activeElement.blur();
-     });
- });
-
-    </script>
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
       const token = localStorage.getItem("jwtToken");
@@ -594,11 +409,7 @@
 
           data.forEach(project => {
 
-              console.log(project);
-
               let row = document.createElement("tr");
-              row.setAttribute("data-country-links", JSON.stringify(project.countryLinks));
-              row.setAttribute("data-project-vendors", JSON.stringify(project.vendorsUsername));
 
               row.innerHTML = `
                   <td>${project.projectIdentifier}</td>
@@ -613,20 +424,21 @@
                   <td>${project.counts}</td>
                   <td>${project.client}</td>
                   <td>
-                      <button type="button" class="btn btn-success view-links" data-bs-toggle="modal" data-bs-target="#linksModal">View Links</button>
+                      <button type="button" class="btn btn-success view-links" >View Links</button>
                   </td>
                   <td>
-                      <button type="button" class="btn btn-success view-vendors" data-bs-toggle="modal" data-bs-target="#linksModal">View Vendors</button>
+                      <button type="button" class="btn btn-success view-vendors" >View Vendors</button>
                   </td>
               `;
-
+              row.setAttribute("data-country-links", JSON.stringify(project.countryLinks));
+              row.setAttribute("data-project-vendors", JSON.stringify(project.vendorsUsername));
               tableBody.appendChild(row);
           });
 
           initializeDataTable();
       })
       .catch(error => console.error('Error fetching projects:', error));
-  });
+    });
 
   // ✅ Move toggleStatus OUTSIDE of .then()
   function toggleStatus(button, projectId) {
@@ -652,26 +464,48 @@
   }
 
   document.addEventListener('click', function (event) {
-      if (event.target.classList.contains('view-links')) {
-          let row = event.target.closest('tr');
-          let countryLinks = JSON.parse(row.getAttribute('data-country-links'));
-          console.log("after clicking view links"+countryLinks);
-          let countryList = document.getElementById('countryList');
-          countryList.innerHTML = ""; // Clear previous entries
 
-          countryLinks.forEach(linkObj => {
-              let li = document.createElement('li');
-              let linkElement = document.createElement('a');
-              linkElement.href = linkObj.originalLink;
-              linkElement.textContent = linkObj.originalLink;
-              linkElement.target = "_blank";
+    if (event.target.classList.contains('view-vendors')) {
+        const row = event.target.closest('tr');
+        const vendors = JSON.parse(row.getAttribute('data-project-vendors') || '[]');
+        const vendorList = document.getElementById('vendorList');
 
-              li.innerHTML = `<strong>${linkObj.country}:</strong> `;
-              li.appendChild(linkElement);
-              countryList.appendChild(li);
-          });
-      }
+        vendorList.innerHTML = ""; // Clear old vendors
+        vendors.forEach(vendor => {
+            const li = document.createElement('li');
+            li.textContent = vendor;
+            vendorList.appendChild(li);
+        });
+
+        // Show the modal using Bootstrap's API
+        const vendorsModal = new bootstrap.Modal(document.getElementById('vendorsModal'));
+        vendorsModal.show();
+    }
+
+    if (event.target.classList.contains('view-links')) {
+        const row = event.target.closest('tr');
+        const countryLinks = JSON.parse(row.getAttribute('data-country-links'));
+        const countryList = document.getElementById('countryList');
+        countryList.innerHTML = ""; // Clear old links
+
+        countryLinks.forEach(linkObj => {
+            const li = document.createElement('li');
+            const linkElement = document.createElement('a');
+            linkElement.href = linkObj.originalLink;
+            linkElement.textContent = linkObj.originalLink;
+            linkElement.target = "_blank";
+
+            li.innerHTML = `<strong>${linkObj.country}:</strong> `;
+            li.appendChild(linkElement);
+            countryList.appendChild(li);
+        });
+
+        // Show the modal using Bootstrap's API
+        const linksModal = new bootstrap.Modal(document.getElementById('linksModal'));
+        linksModal.show();
+    }
   });
+
 
   function initializeDataTable() {
       $("#example").DataTable({

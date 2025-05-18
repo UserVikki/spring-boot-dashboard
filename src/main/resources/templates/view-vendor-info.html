@@ -59,7 +59,7 @@
                                 <img src="/assets/images/logo-sm.svg" alt="" height="24">
                             </span>
                         <span class="logo-lg">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Amigo Insights</span>
+                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt" th:text="${companyName}">Amigo insight</span>
                             </span>
                     </a>
 
@@ -68,7 +68,8 @@
                                 <img src="/assets/images/logo-sm.svg" alt="" height="24">
                             </span>
                         <span class="logo-lg">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span class="logo-txt">Amigo Insights</span>
+                                <img src="/assets/images/logo-sm.svg" alt="" height="24">
+                                <span class="logo-txt" th:text="${companyName}">Amigo insight</span>
                             </span>
                     </a>
                 </div>
@@ -357,11 +358,11 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-6">
-                        <script>document.write(new Date().getFullYear())</script> © Amigo Insights.
+                        <script>document.write(new Date().getFullYear())</script> © <span th:text="${companyName}">Company</span>.
                     </div>
                     <div class="col-sm-6">
                         <div class="text-sm-end d-none d-sm-block">
-                            Design & Develop by <a href="#!" class="text-decoration-underline">AmigoInsights</a>
+                            Design & Develop by <a href="#!" class="text-decoration-underline" th:text="${companyName}">AmigoInsight</a>
                         </div>
                     </div>
                 </div>

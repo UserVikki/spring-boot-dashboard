@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 
 <head>
 
@@ -75,10 +75,54 @@
 
 
                                 </div>
+                                <!-- Change Password Button -->
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                        Change Password
+                                    </button>
+                                </div>
+
+                                <!-- Change Password Modal -->
+                                <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form id="changePasswordForm">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div id="changePasswordError" class="text-danger mb-2"></div>
+                                                    <div id="changePasswordSuccess" class="text-success mb-2"></div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Current Password</label>
+                                                        <input type="password" class="form-control" id="currentPassword" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">New Password</label>
+                                                        <input type="password" class="form-control" id="newPassword" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Confirm New Password</label>
+                                                        <input type="password" class="form-control" id="confirmPassword" required>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-primary">Update Password</button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
                                 <div class="mt-4 mt-md-5 text-center">
                                     <p class="mb-0">© <script>
                                             document.write(new Date().getFullYear())
-                                        </script>Design & Develope By AmigoInsights</p>
+                                        </script>Design & Develope By <span th:text="${companyName}">Company</span></p>``
                                 </div>
                             </div>
                         </div>
@@ -152,6 +196,58 @@
             });
         });
     </script>
+
+    <script>
+        document.getElementById("changePasswordForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const currentPassword = document.getElementById("currentPassword").value;
+            const newPassword = document.getElementById("newPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+
+            const errorDiv = document.getElementById("changePasswordError");
+            const successDiv = document.getElementById("changePasswordSuccess");
+
+            errorDiv.innerText = "";
+            successDiv.innerText = "";
+
+            if (newPassword !== confirmPassword) {
+                errorDiv.innerText = "New password and confirm password do not match.";
+                return;
+            }
+
+            // Call API
+            fetch("/change-password", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    currentPassword: currentPassword,
+                    newPassword: newPassword
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.text();
+            })
+            .then(data => {
+                successDiv.innerText = data;
+                // Optionally, close modal after delay
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+                    modal.hide();
+                    document.getElementById("changePasswordForm").reset();
+                }, 1500);
+            })
+            .catch(error => {
+                errorDiv.innerText = error.message || "An error occurred.";
+            });
+        });
+    </script>
+
 
 </body>
 

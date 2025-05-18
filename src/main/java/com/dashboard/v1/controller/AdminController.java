@@ -2,6 +2,7 @@ package com.dashboard.v1.controller;
 
 import com.dashboard.v1.AppProperties;
 import com.dashboard.v1.entity.*;
+import com.dashboard.v1.model.request.ChangePasswordRequest;
 import com.dashboard.v1.model.request.ClientRequest;
 import com.dashboard.v1.model.request.VendorRequest;
 import com.dashboard.v1.model.response.GetClientResponse;
@@ -15,11 +16,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
+import java.security.Principal;
 import java.util.*;
 
 @RestController
@@ -43,7 +46,6 @@ public class AdminController {
 
     //    private final String domain = "localhost:8080";
     private final AppProperties appProperties;
-
 
     @PostMapping("/vendors/create")
     public ResponseEntity<?> createVendor(@RequestBody VendorRequest request) {
