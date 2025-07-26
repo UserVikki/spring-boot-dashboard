@@ -276,7 +276,7 @@
                                             <!-- Single Select for Vendor -->
                                             <div class="col-lg-6 mb-3">
                                                 <label for="vendors" class="form-label">Select Vendor</label>
-                                                <select class="form-control select2" id="vendors" name="vendor">
+                                                <select class="form-control select2" id="vendors" name="vendors[]" multiple>
                                                     <option value="">-- Select Vendor --</option>
                                                     <option value="V001">Vendor 1</option>
                                                     <option value="V002">Vendor 2</option>
@@ -495,7 +495,7 @@
 
         function populateVendors(vendors) {
             let vendorSelect = document.getElementById("vendors");
-            vendorSelect.innerHTML = '<option value="">-- Select Vendor --</option>';
+            vendorSelect.innerHTML = ''; // No default option since it's multiselect
             vendors.forEach(vendor => {
                 let option = document.createElement("option");
                 option.value = vendor.id;
@@ -504,7 +504,7 @@
             });
         }
 
-        function populateProjects(projects,vendor) {
+        function populateProjects(projects) {
             let projectSelect = document.getElementById("projects");
             projectSelect.innerHTML = ''; // Clear existing options
 
@@ -512,28 +512,26 @@
                 let option = document.createElement("option");
                 option.value = project.projectIdentifier;
                 option.textContent = project.projectIdentifier;
-
-                // Disable if already assigned
-                if (project.vendorsUsername == vendor.username) {
-                    option.disabled = true;
-                }
                 projectSelect.appendChild(option);
             });
 
             $(".select2").select2(); // Reinitialize Select2 for better UI
         }
 
-        document.getElementById("submitForm").addEventListener("click", function () {
-            let selectedVendor = document.getElementById("vendors").value;
-            let selectedProjects = $("#projects").val();
 
-            if (!selectedVendor || selectedProjects.length === 0) {
-                alert("Please select a vendor and at least one project.");
+        document.getElementById("submitForm").addEventListener("click", function (e) {
+            e.preventDefault(); // prevent actual form submission
+
+            let selectedVendors = $("#vendors").val();   // <-- now multiple
+            let selectedProjects = $("#projects").val(); // <-- already multiple
+
+            if (!selectedVendors || selectedVendors.length === 0 || !selectedProjects || selectedProjects.length === 0) {
+                alert("Please select at least one vendor and one project.");
                 return;
             }
 
             let requestBody = {
-                vendorId: selectedVendor,
+                vendorIds: selectedVendors,
                 projectIds: selectedProjects
             };
 
@@ -558,6 +556,7 @@
                 document.getElementById("loader").style.display = "none";
             });
         });
+
     });
 
 </script>

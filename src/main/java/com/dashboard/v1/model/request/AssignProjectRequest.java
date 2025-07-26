@@ -6,6 +6,6 @@ import java.util.List;
 
 @Data
 public class AssignProjectRequest {
-    private Long vendorId;
+    private List<Long> vendorIds;
     private List<String> projectIds;
 }

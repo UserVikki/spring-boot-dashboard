@@ -21,4 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.userToken = :token")
     Optional<User> findByToken(@Param("token") String token);
 
+    Optional<List<User>> findByIdIn(List<Long> ids);
+
+
 }

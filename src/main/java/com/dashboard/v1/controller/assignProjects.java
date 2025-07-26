@@ -43,41 +43,44 @@ public class assignProjects {
 
     @PostMapping("/assign-projects")
     public ResponseEntity<String> assignProjectsToVendor(@RequestBody AssignProjectRequest request) {
-        Optional<User> vendorOpt = userRepository.findById(request.getVendorId());
+        Optional<List<User>> vendorOpt = userRepository.findByIdIn(request.getVendorIds());
         if (!vendorOpt.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Vendor not found");
         }
 
-        User vendor = vendorOpt.get();
-        List<String> projects = vendor.getProjectsId();
-        List<String> selectedProjects = request.getProjectIds();
+        List<User> vendors = vendorOpt.get();
+        vendors.forEach(vendor ->{
 
-        selectedProjects.forEach(projectId -> {
-            Optional<Project> optionalProject = projectRepository.findByProjectIdentifier(projectId);
+                List<String> projects = vendor.getProjectsId();
+                List<String> selectedProjects = request.getProjectIds();
 
-            if (optionalProject.isPresent() && !projects.contains(projectId)) {
-                Project project = optionalProject.get();
+                selectedProjects.forEach(projectId -> {
+                    Optional<Project> optionalProject = projectRepository.findByProjectIdentifier(projectId);
 
-                List<String> vendors = project.getVendorsUsername();
-                if (vendors == null) {
-                    vendors = new ArrayList<>();
-                }
+                    if (optionalProject.isPresent() && !projects.contains(projectId)) {
+                        Project project = optionalProject.get();
 
-                if(!vendors.contains(vendor.getUsername())){
-                    vendors.add(vendor.getUsername());
-                    project.setVendorsUsername(vendors);
-                    projectRepository.save(project);
-                    projects.add(projectId);
-                }
+                        List<String> vendorsOfProject = project.getVendorsUsername();
+                        if (vendorsOfProject == null) {
+                            vendorsOfProject = new ArrayList<>();
+                        }
+
+                        if (!vendorsOfProject.contains(vendor.getUsername())) {
+                            vendorsOfProject.add(vendor.getUsername());
+                            project.setVendorsUsername(vendorsOfProject);
+                            projectRepository.save(project);
+                            projects.add(projectId);
+                        }
 
 
+                    }
+                });
 
-            }
+
+                vendor.getProjectsId().addAll(projects);
+                userRepository.save(vendor);
+
         });
-
-
-        vendor.getProjectsId().addAll(projects);
-        userRepository.save(vendor);
 
         return ResponseEntity.ok("Projects assigned successfully!");
     }
