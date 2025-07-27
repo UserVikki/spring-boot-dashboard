@@ -4,6 +4,7 @@ import com.dashboard.v1.entity.*;
 import com.dashboard.v1.repository.ProjectRepository;
 import com.dashboard.v1.repository.SurveyResponseRepository;
 import com.dashboard.v1.repository.UserRepository;
+import com.dashboard.v1.service.ProjectVendorService;
 import com.dashboard.v1.util.SslUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ public class SurveyResponseController {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
+    private final ProjectVendorService projectVendorService;
 
     @GetMapping("/complete")
     public ResponseEntity<?> submitComplete(@RequestParam String UID) {
@@ -60,13 +62,19 @@ public class SurveyResponseController {
         if(!surveyResponse.isPresent()){
             return ResponseEntity.ok("Survey response does not match with any vendor click");
         }
+        SurveyResponse res = surveyResponse.get();
+
+
 
         Project project = projectRepository.findByProjectIdentifier(surveyResponse.get().getProjectId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
-        // Retrieve the SurveyResponse object from the Optional
-        SurveyResponse res = surveyResponse.get();
+
+        Optional<User> vendor = userRepository.findByUsername(res.getVendorUsername());
+
+
+
         if(!(surveyResponse.get().getStatus() == SurveyStatus.IN_PROGRESS)) return ResponseEntity.ok("THIS UID is already registered for a response ");;
-        // Set the provided survey status (e.g., COMPLETE, TERMINATE, QUOTAFULL) to the survey response
+
         res.setStatus(status);
 
         surveyResponseRepository.save(res);
@@ -76,41 +84,10 @@ public class SurveyResponseController {
             project.setCounts(String.valueOf(currentCount + 1));
             projectRepository.save(project);
         }
-        Optional<User> vendor = userRepository.findByUsername(res.getVendorUsername());
 
-        if(!vendor.isPresent())
-        {
-            logger.info("vendor not found for this survey submission projectId : {}, UID : {} ", project.getProjectIdentifier(), UID);
-            return ResponseEntity.ok("vendor not found for this survey submission");
-        }
-        // get the vendor api according to status (complete,terminate,quotafull) and make a http request to them with PID and UID
-        // Get the original vendor API URL
-        String vendorApiUrl = getVendorApiUrl(vendor.get(), status);
+        projectVendorService.incrementSurveyCount(res.getVendorUsername(), res.getProjectId(), status);
 
-        if (vendorApiUrl == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid survey status");
-        }
-
-        // ✅ Trim the URL by removing from the last '=' to the end
-        int lastEqualIndex = vendorApiUrl.lastIndexOf('=');
-        if (lastEqualIndex != -1) {
-            vendorApiUrl = vendorApiUrl.substring(0, lastEqualIndex);
-        }
-
-        // ✅ Add new uid parameter
-        vendorApiUrl += "="+UID;
-
-        // Optional: build URI (only if more params needed)
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(vendorApiUrl);
-
-        try {
-            SslUtil.disableSslVerification();
-            ResponseEntity<String> response = restTemplate.getForEntity(builder.toUriString(), String.class);
-            return ResponseEntity.ok("Vendor notified successfully: " + response.getBody());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to notify vendor: " + e.getMessage());
-        }
-
+        return notifyVendorWithUid(vendor.get(), status, UID);
     }
 
     @GetMapping("/api/survey-responses/all")
@@ -130,4 +107,41 @@ public class SurveyResponseController {
                 return null;
         }
     }
+
+    public ResponseEntity<String> notifyVendorWithUid(User vendor, SurveyStatus status, String UID) {
+        String vendorApiUrl = getVendorApiUrl(vendor, status);
+
+        if (vendorApiUrl == null) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("No Vendor Redirects configured for status: " + status);
+        }
+
+        // ✅ Case 1: Replace [UID] if it exists
+        if (vendorApiUrl.contains("[UID]")) {
+            vendorApiUrl = vendorApiUrl.replace("[UID]", UID);
+        } else {
+            // ✅ Case 2: Trim after last '=' and append UID
+            int lastEqualIndex = vendorApiUrl.lastIndexOf('=');
+            if (lastEqualIndex != -1) {
+                vendorApiUrl = vendorApiUrl.substring(0, lastEqualIndex);
+            }
+            vendorApiUrl += "=" + UID;
+        }
+
+        try {
+            SslUtil.disableSslVerification();
+
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(vendorApiUrl);
+            ResponseEntity<String> response = restTemplate.getForEntity(builder.toUriString(), String.class);
+
+            return ResponseEntity.ok("Vendor notified successfully: " + response.getBody());
+
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to notify vendor: " + e.getMessage());
+        }
+    }
+
 }

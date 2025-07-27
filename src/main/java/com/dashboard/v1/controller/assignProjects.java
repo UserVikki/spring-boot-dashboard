@@ -1,9 +1,6 @@
 package com.dashboard.v1.controller;
 
-import com.dashboard.v1.entity.Project;
-import com.dashboard.v1.entity.ProjectStatus;
-import com.dashboard.v1.entity.Role;
-import com.dashboard.v1.entity.User;
+import com.dashboard.v1.entity.*;
 import com.dashboard.v1.model.request.AssignProjectRequest;
 import com.dashboard.v1.repository.ProjectRepository;
 import com.dashboard.v1.repository.UserRepository;
@@ -34,8 +31,12 @@ public class assignProjects {
         List<Project> availableForAssign = projects.stream()
                 .filter(p -> p.getStatus() == ProjectStatus.OPEN)
                 .collect(Collectors.toList());
+
+        List<User> vendorNotHidden = vendors.get().stream()
+                .filter(v -> v.getIsShown() == IsRemoved.show)
+                .collect(Collectors.toList());
         Map<String, Object> response = new HashMap<>();
-        response.put("vendors", vendors);
+        response.put("vendors", vendorNotHidden);
         response.put("projects", availableForAssign);
 
         return ResponseEntity.ok(response);
@@ -48,7 +49,8 @@ public class assignProjects {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Vendor not found");
         }
 
-        List<User> vendors = vendorOpt.get();
+        List<User> vendors = vendorOpt.get().stream().filter(vendor -> vendor.getIsShown() == IsRemoved.show)
+                .collect(Collectors.toList());
         vendors.forEach(vendor ->{
 
                 List<String> projects = vendor.getProjectsId();
@@ -57,7 +59,7 @@ public class assignProjects {
                 selectedProjects.forEach(projectId -> {
                     Optional<Project> optionalProject = projectRepository.findByProjectIdentifier(projectId);
 
-                    if (optionalProject.isPresent() && !projects.contains(projectId)) {
+                    if (optionalProject.isPresent() && !projects.contains(projectId) && optionalProject.get().getStatus() == ProjectStatus.OPEN) {
                         Project project = optionalProject.get();
 
                         List<String> vendorsOfProject = project.getVendorsUsername();

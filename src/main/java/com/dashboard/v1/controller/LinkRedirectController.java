@@ -55,6 +55,7 @@ public class LinkRedirectController {
 
     @Autowired
     private UserRepository userRepository;
+
     @GetMapping("/survey")
     public ResponseEntity<String> vendorClick(@RequestParam("uid") String uid,
                                               @RequestParam("pid") String pid,
@@ -147,56 +148,8 @@ public class LinkRedirectController {
             surveyResponseRepository.save(newResponse);
             // Build the headers to perform a redirect to the original link.
             HttpHeaders headers = new HttpHeaders();
-            // Regex pattern to find the `uid=` parameter and replace its value
-//            Pattern pattern = Pattern.compile("([?&]uid=)([^&]*)");
-//            Matcher matcher = pattern.matcher(originalLink);
-
-//            String key = "uid"; // this can be any key
-//
-//            // Build regex dynamically to find 'key=...'
-//            String regex = key + "=[^&]*$";
-//
-//            if (url.matches(".*" + regex)) {
-//                // Replace existing value for the key at the end
-//                url = url.replaceAll(regex, key + "=" + uid);
-//            } else {
-//                // Append new key-value if not present
-//                url += (url.contains("?") ? "&" : "?") + key + "=" + uid;
-//            }
-
-// Step 1: Extract last key from the URL
 
             url = urlUtils.updateIfConditionMatches(url,uid);
-
-
-//            String key = null;
-//            int queryStart = url.indexOf('?');
-//            if (queryStart != -1) {
-//                String query = url.substring(queryStart + 1);
-//                String[] params = query.split("&");
-//                if (params.length > 0) {
-//                    String lastParam = params[params.length - 1];
-//                    int equalIndex = lastParam.indexOf('=');
-//                    if (equalIndex != -1) {
-//                        key = lastParam.substring(0, equalIndex);
-//                    }
-//                }
-//            }
-//
-//            if (key != null) {
-//
-//                // Step 2: Build regex and matcher
-//                Pattern pattern = Pattern.compile("([?&]" + key + "=)([^&]*)");
-//                Matcher matcher = pattern.matcher(url);
-//
-//                if (matcher.find()) {
-//                    // Replace existing value of the last key
-//                    url = matcher.replaceFirst(matcher.group(1) + uid);
-//                } else {
-//                    // Append if key not found
-//                    url += (url.contains("?") ? "&" : "?") + key + "=" + uid;
-//                }
-//            }
 
             System.out.println(url);
 

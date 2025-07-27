@@ -53,6 +53,10 @@ public class UrlUtils {
     }
 
     public String updateIfConditionMatches(String url, String newValue) {
+
+        String temp = url.replace("[UID]", newValue);
+        if(!temp.equals(url)) return temp;
+
         Map<String, String> paramMap = getQueryParams(url);
 
         // 1. Look for value that starts and ends with brackets

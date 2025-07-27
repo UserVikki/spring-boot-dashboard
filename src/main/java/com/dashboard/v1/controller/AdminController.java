@@ -43,6 +43,7 @@ public class AdminController {
     private final VendorProjectLinkRepository vendorProjectLinkRepository;
     private final VendorService vendorService;
     private final SurveyResponseRepository surveyResponseRepository;
+    private final ProjectVendorCountsRepository projectVendorCountsRepository;
 
     //    private final String domain = "localhost:8080";
     private final AppProperties appProperties;
@@ -216,18 +217,33 @@ public class AdminController {
             return ResponseEntity.ok(Collections.emptyList());
         }
 
-        List<SurveyResponse> surveyResponses = surveyResponseRepository.findByProjectIdIn(projectIds);
         Map<String, GetVendorResponse> projectResponseMap = new HashMap<>();
 
         projectIds.forEach(projectId ->
         {
             Optional<Project> project = projectRepository.findByProjectIdentifier(projectId);
             if(project.isPresent()) {
+
                 GetVendorResponse getVendorResponse = new GetVendorResponse();
                 getVendorResponse.setProjectId(projectId);
-                getVendorResponse.setComplete("0");
-                getVendorResponse.setTerminate("0");
-                getVendorResponse.setQuotafull("0");
+
+                // ✅ Fetch counts from ProjectVendorCounts table
+                Optional<ProjectVendorCounts> countsOpt =
+                        projectVendorCountsRepository.findByVendorUsernameAndProjectId(userName, projectId);
+
+                ProjectVendorCounts counts = countsOpt.orElseGet(() -> {
+                    ProjectVendorCounts emptyCounts = new ProjectVendorCounts();
+                    emptyCounts.setCompletedSurveys(0);
+                    emptyCounts.setTerminatedSurveys(0);
+                    emptyCounts.setQuotaFullSurveys(0);
+                    return emptyCounts;
+                });
+
+                getVendorResponse.setComplete(String.valueOf(counts.getCompletedSurveys()));
+                getVendorResponse.setTerminate(String.valueOf(counts.getTerminatedSurveys()));
+                getVendorResponse.setQuotafull(String.valueOf(counts.getQuotaFullSurveys()));
+
+
                 List<CountryLink> links = new ArrayList<>();
                 project.get().getCountryLinks().forEach(countrylink ->
                 {
@@ -240,30 +256,6 @@ public class AdminController {
                 projectResponseMap.put(project.get().getProjectIdentifier(), getVendorResponse);
             }
         });
-        for (SurveyResponse survey : surveyResponses) {
-            String projectId = survey.getProjectId();
-            SurveyStatus status = survey.getStatus();
-
-            // If projectId is not already in map, initialize
-            projectResponseMap.putIfAbsent(projectId, new GetVendorResponse());
-            GetVendorResponse response = projectResponseMap.get(projectId);
-            response.setProjectId(projectId);
-
-            // Count status occurrences
-            switch (status) {
-                case COMPLETE:
-                    response.setComplete(String.valueOf(Integer.parseInt(response.getComplete() == null ? "0" : response.getComplete()) + 1));
-                    break;
-                case TERMINATE:
-                    response.setTerminate(String.valueOf(Integer.parseInt(response.getTerminate() == null ? "0" : response.getTerminate()) + 1));
-                    break;
-                case QUOTAFULL:
-                    response.setQuotafull(String.valueOf(Integer.parseInt(response.getQuotafull() == null ? "0" : response.getQuotafull()) + 1));
-                    break;
-                default:
-                    break;
-            }
-        }
 
         List<GetVendorResponse> responseList = new ArrayList<>(projectResponseMap.values());
         return ResponseEntity.ok(responseList);
